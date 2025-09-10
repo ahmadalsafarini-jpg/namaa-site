@@ -789,7 +789,7 @@ const TopNav = ({ onNavigate, route }) => {
         <div className="flex items-center gap-2">
           {/* Replace /logo.png with your asset in public/ */}
           <img src="/logo2.svg" alt="Namaa Logo" className="h-8 w-auto" />
-          <span className="font-semibold text-slate-900">Namaa</span>
+          <span className="font-semibold text-slate-900"></span>
         </div>
         <nav className="flex items-center gap-1">
           {links.map((l) => (
