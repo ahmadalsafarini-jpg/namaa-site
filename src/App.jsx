@@ -788,8 +788,7 @@ const TopNav = ({ onNavigate, route }) => {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <div className="flex items-center gap-2">
           {/* Replace /logo.png with your asset in public/ */}
-          <img src="/logo2.svg" alt="Namaa Logo" className="h-8 w-auto" />
-          <span className="font-semibold text-slate-900"></span>
+          <img src="/logo2.svg" alt="Namaa Logo" className="h-10 w-auto" />
         </div>
         <nav className="flex items-center gap-1">
           {links.map((l) => (
