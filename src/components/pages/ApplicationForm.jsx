@@ -117,14 +117,20 @@ const ApplicationForm = ({ onSubmit, onCancel, user }) => {
   
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4">
         <h2 className="text-2xl font-semibold">Application Form</h2>
-        <GhostButton onClick={onCancel}>Cancel</GhostButton>
       </div>
       <Card>
         <form className="grid grid-cols-1 gap-4 md:grid-cols-2" onSubmit={async (e) => {
           e.preventDefault();
           if (!can || loading || success) return;
+          
+          // Check if files are still uploading
+          const isUploading = Object.values(uploadingFiles).some(files => files.length > 0);
+          if (isUploading) {
+            setError("Please wait for file uploads to complete before submitting.");
+            return;
+          }
           
           setLoading(true);
           setError("");
@@ -358,10 +364,23 @@ const ApplicationForm = ({ onSubmit, onCancel, user }) => {
           <div className="md:col-span-2 flex items-center gap-3 pt-2">
             <PrimaryButton type="submit" disabled={loading || success || Object.values(uploadingFiles).some(files => files.length > 0)}>
               <Upload className="h-4 w-4" /> 
-              {Object.values(uploadingFiles).some(files => files.length > 0) ? "Uploading Files..." : loading ? "Submitting..." : success ? "Submitted Successfully!" : "Submit Application"}
+              {Object.values(uploadingFiles).some(files => files.length > 0) 
+                ? "Uploading Files... Please Wait" 
+                : loading 
+                  ? "Submitting..." 
+                  : success 
+                    ? "Submitted Successfully!" 
+                    : "Submit Application"
+              }
             </PrimaryButton>
+            <GhostButton onClick={onCancel}>Cancel</GhostButton>
             <span className="text-sm text-slate-500">
-              {success ? "Form will reset automatically" : "A ticket will be auto-generated."}
+              {Object.values(uploadingFiles).some(files => files.length > 0) 
+                ? "Please wait for all files to upload before submitting." 
+                : success 
+                  ? "Form will reset automatically" 
+                  : "A ticket will be auto-generated."
+              }
             </span>
           </div>
         </form>

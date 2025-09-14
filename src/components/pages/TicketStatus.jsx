@@ -67,12 +67,12 @@ const TicketStatus = ({ user, onAdvance, onGoMatching, onNewApplication, loading
   }
 
   if (applications.length === 0) {
-    return (
+  return (
       <div className="mx-auto max-w-6xl px-4 py-10">
-        <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between">
           <h2 className="text-2xl font-semibold">Applications & Tickets</h2>
-        </div>
-        <Card>
+      </div>
+      <Card>
           <div className="text-center py-8">
             <p className="text-slate-600">No applications found. Create your first application to get started.</p>
           </div>
@@ -269,26 +269,26 @@ const TicketStatus = ({ user, onAdvance, onGoMatching, onNewApplication, loading
               <div>
                 <span className="text-slate-600 text-sm">Progress:</span>
                 <div className="mt-2"><Progress value={progress} /></div>
-              </div>
+          </div>
 
               <div className="grid grid-cols-2 gap-2 md:grid-cols-6">
-                {STATUS_FLOW.map((s) => (
-                  <div key={s} className={`rounded-xl border px-3 py-2 text-center text-xs ${
+            {STATUS_FLOW.map((s) => (
+              <div key={s} className={`rounded-xl border px-3 py-2 text-center text-xs ${
                     STATUS_FLOW.indexOf(s) <= STATUS_FLOW.indexOf(selectedApplication.status)
-                      ? "border-emerald-300 bg-emerald-50 text-emerald-700"
-                      : "border-slate-200 bg-white text-slate-500"
-                  }`}>
-                    {s}
-                  </div>
-                ))}
+                  ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+                  : "border-slate-200 bg-white text-slate-500"
+              }`}>
+                {s}
               </div>
+            ))}
+          </div>
 
               <div className="flex flex-wrap items-center gap-3 pt-4">
                 {selectedApplication.status !== "Completed" && (
                   <PrimaryButton onClick={() => onAdvance(selectedApplication)}>
-                    Advance Status <Loader2 className="h-4 w-4 animate-spin" />
-                  </PrimaryButton>
-                )}
+                    Advance Status
+              </PrimaryButton>
+            )}
                 {selectedApplication.status === "Matched" && (
                   <GhostButton onClick={onGoMatching}>View Matching & Offers</GhostButton>
                 )}
@@ -297,13 +297,13 @@ const TicketStatus = ({ user, onAdvance, onGoMatching, onNewApplication, loading
               <p className="text-xs text-slate-500">
                 Notifications (email/SMS) will be sent on status changes in production.
               </p>
-            </div>
+          </div>
           ) : (
             <div className="text-center py-8">
               <p className="text-slate-600">Select an application to view details</p>
-            </div>
+        </div>
           )}
-        </Card>
+      </Card>
       </div>
     </div>
   );

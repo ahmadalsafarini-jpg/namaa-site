@@ -38,6 +38,7 @@ export const createApplication = async (applicationData) => {
     const applicationWithMetadata = {
       ...applicationData,
       id: newApplicationRef.key,
+      status: applicationData.status || "Pending",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
