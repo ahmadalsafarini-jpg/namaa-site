@@ -1,4 +1,5 @@
 export { default as Landing } from './Landing';
+export { default as SignIn } from './SignIn';
 export { default as Registration } from './Registration';
 export { default as Dashboard } from './Dashboard';
 export { default as ApplicationForm } from './ApplicationForm';

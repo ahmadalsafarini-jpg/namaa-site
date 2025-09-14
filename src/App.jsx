@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import TopNav from "./components/layout/TopNav";
 import {
   Landing, 
+  SignIn,
   Registration, 
   Dashboard, 
   ApplicationForm, 
@@ -12,16 +13,16 @@ import {
   FinalProject 
 } from "./components/pages";
 import { nextStatus, progressForStatus, runSelfTests } from "./utils";
-import { onAuthStateChange, getCurrentUser } from "./firebase/auth";
+import { onAuthStateChange, getCurrentUser, currentUser } from "./firebase/auth";
 
 // Run self-tests on load
 runSelfTests();
 
 /******************** Root App ********************/
 export default function NamaaPrototype() {
-  const [route, setRoute] = useState("landing");
+  const [route, setRoute] = useState(() => (currentUser() ? "dashboard" : "landing"));
   const [lead, setLead] = useState(null);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(currentUser());
   const [tickets, setTickets] = useState([]);
   const [activeTicketId, setActiveTicketId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -56,6 +57,11 @@ export default function NamaaPrototype() {
 
   const handleLeadSubmit = (l) => { setLead(l); goto("register"); };
   const handleRegistered = (u) => { setUser(u); goto("dashboard"); };
+  const handleLoggedIn = (u) => { setUser(u); goto("dashboard"); };
+  const handleLogout = () => { 
+    setUser(null); 
+    setRoute("landing"); 
+  };
   const handleApplicationSubmit = (ticket) => { setTickets((s) => [ticket, ...s]); setActiveTicketId(ticket.id); goto("ticket"); };
 
   const advanceStatus = () => {
@@ -98,12 +104,18 @@ export default function NamaaPrototype() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <TopNav onNavigate={goto} route={route} />
+      <TopNav onNavigate={goto} route={route} user={user} onLogout={handleLogout} />
 
       <AnimatePresence mode="wait">
         {route === "landing" && (
           <motion.div key="landing" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
             <Landing onLeadSubmit={handleLeadSubmit} />
+          </motion.div>
+        )}
+
+        {route === "login" && (
+          <motion.div key="login" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <SignIn onLoggedIn={handleLoggedIn} />
           </motion.div>
         )}
 

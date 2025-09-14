@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Sun, FileText, Building2, BatteryCharging, ArrowRight, Phone, Mail, MapPin, ShieldCheck } from "lucide-react";
 import { Pill, Section, Card, PrimaryButton, GhostButton, Input, AnimatedGrid } from "../ui";
+import { HERO_URL } from "../../constants";
 
 const Landing = ({ onLeadSubmit }) => {
   const [lead, setLead] = useState({ name: "", email: "", phone: "" });
@@ -15,8 +16,7 @@ const Landing = ({ onLeadSubmit }) => {
         <div
           className="absolute inset-0 -z-20 bg-cover bg-center"
           style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1592833159117-ac790d4066e4?q=80&w=1170&auto=format&fit=crop&quot')",
+            backgroundImage: `url('${HERO_URL}')`,
           }}
         />
         {/* Overlay */}

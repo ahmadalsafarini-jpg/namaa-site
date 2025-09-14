@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, PrimaryButton, Input } from "../ui";
-import { createUser } from "../../firebase/auth";
+import { createUser, registerUser } from "../../firebase/auth";
 import { createUserProfile } from "../../firebase/firestore";
 
 const Registration = ({ lead, onRegistered }) => {
@@ -29,35 +29,45 @@ const Registration = ({ lead, onRegistered }) => {
             setError("");
             
             try {
-              // Create Firebase Auth user
+              // Try Firebase first, fallback to localStorage
               const authResult = await createUser(form.email, form.password, {
                 name: form.name,
                 phone: form.phone
               });
               
               if (authResult.success) {
-                // Create user profile in Firestore
-                const profileResult = await createUserProfile(authResult.user.uid, {
-                  name: form.name,
-                  email: form.email,
-                  phone: form.phone,
-                  role: 'customer'
-                });
+                const user = authResult.user;
                 
-                if (profileResult.success) {
-                  onRegistered({ 
-                    id: authResult.user.uid, 
-                    ...form,
-                    uid: authResult.user.uid
-                  });
-                } else {
-                  setError(profileResult.error);
+                // Try to create Firestore profile if Firebase user
+                if (user.uid) {
+                  try {
+                    const profileResult = await createUserProfile(user.uid, {
+                      name: form.name,
+                      email: form.email,
+                      phone: form.phone,
+                      role: 'customer'
+                    });
+                    
+                    if (!profileResult.success) {
+                      console.warn('Firestore profile creation failed:', profileResult.error);
+                    }
+                  } catch (profileError) {
+                    console.warn('Firestore profile creation error:', profileError);
+                  }
                 }
+                
+                onRegistered({ 
+                  id: user.uid || user.id, 
+                  name: user.displayName || form.name,
+                  email: user.email || form.email,
+                  phone: user.phoneNumber || form.phone,
+                  uid: user.uid || user.id
+                });
               } else {
                 setError(authResult.error);
               }
             } catch (err) {
-              setError("An unexpected error occurred. Please try again.");
+              setError(err.message || "An unexpected error occurred. Please try again.");
               console.error("Registration error:", err);
             } finally {
               setLoading(false);

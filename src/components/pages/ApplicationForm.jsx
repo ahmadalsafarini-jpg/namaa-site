@@ -3,6 +3,7 @@ import { Upload } from "lucide-react";
 import { Card, PrimaryButton, GhostButton, Input, Select, TextArea, FilePicker } from "../ui";
 import { formatDate } from "../../utils";
 import { createTicket } from "../../firebase/firestore";
+import { COUNTRIES } from "../../constants";
 
 const ApplicationForm = ({ onSubmit, onCancel, user }) => {
   const [f, setF] = useState({ 
@@ -75,7 +76,13 @@ const ApplicationForm = ({ onSubmit, onCancel, user }) => {
             required 
             options={["Commercial", "Industrial", "Educational", "Healthcare", "Agricultural"]} 
           />
-          <Input label="Location" value={f.location} onChange={(v) => setF((s) => ({ ...s, location: v }))} required />
+          <Select 
+            label="Location" 
+            value={f.location} 
+            onChange={(v) => setF((s) => ({ ...s, location: v }))} 
+            required 
+            options={COUNTRIES} 
+          />
           <Input 
             label="Load profile (kWh/month)" 
             value={f.loadProfile} 
