@@ -26,7 +26,6 @@ const TopNav = ({ onNavigate, route, user, onLogout }) => {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <div className="flex items-center gap-2">
           <img src="/logo2.svg" alt="Namaa Logo" className="h-10 w-auto" />
-          <span className="hidden sm:inline font-semibold text-slate-800">Namaa Energy</span>
         </div>
         <nav className="flex items-center gap-1">
           {visible.map((l) => (
