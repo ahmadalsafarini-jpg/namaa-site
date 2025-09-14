@@ -59,6 +59,13 @@ export default function NamaaPrototype() {
     return () => unsubscribe();
   }, []);
 
+  // Ensure activeApplication is set when navigating to matching/financing/project pages
+  useEffect(() => {
+    if ((route === "matching" || route === "financing" || route === "project") && applications.length > 0 && !activeApplicationId) {
+      setActiveApplicationId(applications[0].id);
+    }
+  }, [route, applications, activeApplicationId]);
+
   // Load user's applications from Realtime Database
   const loadUserApplications = async (userId) => {
     if (!userId) return;
@@ -251,21 +258,71 @@ export default function NamaaPrototype() {
            </motion.div>
          )}
 
-         {route === "matching" && activeApplication && (
+         {route === "matching" && (
            <motion.div key="matching" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-             <Matching application={activeApplication} onProceedPay={handleProceedPay} onFinancing={handleApplyFinancing} onMoreInfo={handleMoreInfo} />
+             {activeApplication ? (
+               <Matching application={activeApplication} onProceedPay={handleProceedPay} onFinancing={handleApplyFinancing} onMoreInfo={handleMoreInfo} />
+             ) : (
+               <div className="mx-auto max-w-3xl px-4 py-10">
+                 <div className="text-center">
+                   <h2 className="text-2xl font-semibold mb-4">No Application Selected</h2>
+                   <p className="text-slate-600 mb-6">Please select an application from your dashboard to view matching options.</p>
+                   <button 
+                     onClick={() => goto("dashboard")} 
+                     className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+                   >
+                     Go to Dashboard
+                   </button>
+                 </div>
+               </div>
+             )}
            </motion.div>
          )}
 
-         {route === "financing" && activeApplication && (
+         {route === "financing" && (
            <motion.div key="financing" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-             <Financing application={activeApplication} company={matchingCompany} onSubmit={handleFinancingSubmit} onCancel={() => goto("matching")} />
+             {activeApplication ? (
+               <Financing application={activeApplication} company={matchingCompany} onSubmit={handleFinancingSubmit} onCancel={() => goto("matching")} />
+             ) : (
+               <div className="mx-auto max-w-3xl px-4 py-10">
+                 <div className="text-center">
+                   <h2 className="text-2xl font-semibold mb-4">No Application Selected</h2>
+                   <p className="text-slate-600 mb-6">Please select an application from your dashboard to view financing options.</p>
+                   <button 
+                     onClick={() => goto("dashboard")} 
+                     className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+                   >
+                     Go to Dashboard
+                   </button>
+                 </div>
+               </div>
+             )}
            </motion.div>
          )}
 
-        {route === "project" && project && (
+        {route === "project" && (
           <motion.div key="project" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-            <FinalProject project={project} />
+            {project || activeApplication ? (
+              <FinalProject project={project || {
+                name: activeApplication?.projectName || "Solar Project",
+                phase: activeApplication?.status === "In Execution" ? "Installation" : 
+                       activeApplication?.status === "Under Review" ? "Financing" :
+                       activeApplication?.status === "Completed" ? "Completed" : "Planning"
+              }} />
+            ) : (
+              <div className="mx-auto max-w-3xl px-4 py-10">
+                <div className="text-center">
+                  <h2 className="text-2xl font-semibold mb-4">No Project Available</h2>
+                  <p className="text-slate-600 mb-6">Please complete the application process to view your project details.</p>
+                  <button 
+                    onClick={() => goto("dashboard")} 
+                    className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+                  >
+                    Go to Dashboard
+                  </button>
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

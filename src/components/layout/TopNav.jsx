@@ -1,6 +1,6 @@
 const TopNav = ({ onNavigate, route, user, onLogout }) => {
   const links = [
-    { key: "landing", label: "Home", public: true, auth: true }, // Visible to both logged in and out
+    { key: "landing", label: "Home", public: true, auth: false }, // Only when not logged in
     { key: "login", label: "Sign In", public: true, auth: false }, // Only when not logged in
     { key: "register", label: "Register", public: true, auth: false }, // Only when not logged in
     { key: "dashboard", label: "Dashboard", public: false, auth: true }, // Only when logged in
@@ -12,7 +12,7 @@ const TopNav = ({ onNavigate, route, user, onLogout }) => {
   
   const visible = links.filter((l) => {
     if (user) {
-      // If user is logged in, show only auth links (Dashboard, Ticket, etc.) + Home
+      // If user is logged in, show only auth links (Dashboard, Ticket, etc.)
       return l.auth;
     } else {
       // If no user, show only public links (Home, Sign In, Register)
