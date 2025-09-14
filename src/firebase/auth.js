@@ -7,7 +7,10 @@ import {
 } from 'firebase/auth';
 import { auth } from './config';
 
-/******************** Auth persistence (localStorage) ********************/
+/******************** Legacy localStorage functions (deprecated) ********************/
+// These functions are kept for backward compatibility but should not be used
+// The app now uses Firebase authentication exclusively
+
 const USERS_KEY = "namaa_users";   // array of {id,name,email,phone,password}
 const SESSION_KEY = "namaa_session"; // {email}
 
@@ -66,7 +69,7 @@ function logoutUserLocal() {
   } 
 }
 
-// Create user account (with Firebase fallback to localStorage)
+// Create user account (Firebase only)
 export const createUser = async (email, password, userData) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -80,75 +83,49 @@ export const createUser = async (email, password, userData) => {
     
     return { success: true, user };
   } catch (error) {
-    console.warn('Firebase registration failed, falling back to localStorage:', error.message);
-    try {
-      const localUser = registerUserLocal({ ...userData, email, password });
-      return { success: true, user: localUser };
-    } catch (localError) {
-      console.error('Local registration also failed:', localError);
-      return { success: false, error: localError.message };
-    }
+    console.error('Firebase registration failed:', error);
+    return { success: false, error: error.code || error.message };
   }
 };
 
-// Sign in user (with Firebase fallback to localStorage)
+// Sign in user (Firebase only)
 export const signInUser = async (email, password) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return { success: true, user: userCredential.user };
   } catch (error) {
-    console.warn('Firebase login failed, falling back to localStorage:', error.message);
-    try {
-      const localUser = loginUserLocal({ email, password });
-      return { success: true, user: localUser };
-    } catch (localError) {
-      console.error('Local login also failed:', localError);
-      return { success: false, error: localError.message };
-    }
+    console.error('Firebase login failed:', error);
+    return { success: false, error: error.code || error.message };
   }
 };
 
-// Sign out user (with localStorage cleanup)
+// Sign out user (Firebase only)
 export const signOutUser = async () => {
   try {
     await signOut(auth);
+    return { success: true };
   } catch (error) {
-    console.warn('Firebase logout failed:', error.message);
+    console.error('Firebase logout failed:', error);
+    return { success: false, error: error.message };
   }
-  // Always clear localStorage session
-  logoutUserLocal();
-  return { success: true };
 };
 
-// Listen to auth state changes (with localStorage fallback)
+// Listen to auth state changes (Firebase only)
 export const onAuthStateChange = (callback) => {
   const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-    if (firebaseUser) {
-      callback(firebaseUser);
-    } else {
-      // Check localStorage if Firebase user is null
-      const localUser = currentUserLocal();
-      if (localUser) {
-        callback(localUser);
-      } else {
-        callback(null);
-      }
-    }
+    callback(firebaseUser);
   });
   
   return unsubscribe;
 };
 
-// Get current user (with localStorage fallback)
+// Get current user (Firebase only)
 export const getCurrentUser = () => {
-  const firebaseUser = auth.currentUser;
-  if (firebaseUser) return firebaseUser;
-  
-  // Fallback to localStorage
-  return currentUserLocal();
+  return auth.currentUser;
 };
 
-// New functions for direct localStorage auth (used by SignIn component)
+// Legacy functions - removed localStorage fallback
+// These are kept for backward compatibility but should not be used
 export const registerUser = registerUserLocal;
 export const loginUser = loginUserLocal;
 export const currentUser = currentUserLocal;

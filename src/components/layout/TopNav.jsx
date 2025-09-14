@@ -4,7 +4,6 @@ const TopNav = ({ onNavigate, route, user, onLogout }) => {
     { key: "login", label: "Sign In", public: true, auth: false }, // Only when not logged in
     { key: "register", label: "Register", public: true, auth: false }, // Only when not logged in
     { key: "dashboard", label: "Dashboard", public: false, auth: true }, // Only when logged in
-    { key: "application", label: "Apply", public: false, auth: true }, // Only when logged in
     { key: "ticket", label: "Ticket", public: false, auth: true }, // Only when logged in
     { key: "matching", label: "Matching", public: false, auth: true }, // Only when logged in
     { key: "financing", label: "Financing", public: false, auth: true }, // Only when logged in
@@ -13,7 +12,7 @@ const TopNav = ({ onNavigate, route, user, onLogout }) => {
   
   const visible = links.filter((l) => {
     if (user) {
-      // If user is logged in, show only auth links (Dashboard, Apply, etc.) + Home
+      // If user is logged in, show only auth links (Dashboard, Ticket, etc.) + Home
       return l.auth;
     } else {
       // If no user, show only public links (Home, Sign In, Register)
@@ -43,7 +42,7 @@ const TopNav = ({ onNavigate, route, user, onLogout }) => {
           {user ? (
             <button 
               onClick={onLogout} 
-              className="ml-2 rounded-xl bg-slate-800 px-3 py-2 text-sm font-medium text-white hover:bg-slate-900"
+              className="ml-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
             >
               Sign out
             </button>

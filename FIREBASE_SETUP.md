@@ -24,7 +24,15 @@
 4. Select a location for your database
 5. Click "Done"
 
-## 4. Get Firebase Configuration
+## 4. Create Realtime Database
+
+1. In Firebase Console, go to "Realtime Database" in the left sidebar
+2. Click "Create Database"
+3. Choose "Start in test mode" (for development)
+4. Select a location for your database (preferably same as Firestore)
+5. Click "Done"
+
+## 5. Get Firebase Configuration
 
 1. In Firebase Console, go to "Project settings" (gear icon)
 2. Scroll down to "Your apps" section
@@ -34,23 +42,32 @@
 6. Click "Register app"
 7. Copy the Firebase configuration object
 
-## 5. Update Firebase Configuration
+## 6. Set Up Environment Variables
 
-Replace the placeholder values in `src/firebase/config.js` with your actual Firebase configuration:
+Create a `.env` file in your project root and add your Firebase configuration:
 
-```javascript
-const firebaseConfig = {
-  apiKey: "your-actual-api-key",
-  authDomain: "your-project-id.firebaseapp.com",
-  projectId: "your-actual-project-id",
-  storageBucket: "your-project-id.appspot.com",
-  messagingSenderId: "your-actual-sender-id",
-  appId: "your-actual-app-id",
-  measurementId: "your-actual-measurement-id"
-};
+```bash
+# Create .env file
+touch .env
 ```
 
-## 6. Install Dependencies
+Add your Firebase credentials to the `.env` file:
+
+```env
+VITE_FIREBASE_API_KEY=your-actual-api-key
+VITE_FIREBASE_AUTH_DOMAIN=your-project-id.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your-actual-project-id
+VITE_FIREBASE_STORAGE_BUCKET=your-project-id.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your-actual-sender-id
+VITE_FIREBASE_APP_ID=your-actual-app-id
+VITE_FIREBASE_MEASUREMENT_ID=your-actual-measurement-id
+```
+
+**Important**: Add `.env` to your `.gitignore` file to keep your credentials secure!
+
+The Firebase configuration in `src/firebase/config.js` will automatically use these environment variables.
+
+## 7. Install Dependencies
 
 Run these commands in your terminal:
 
@@ -58,7 +75,7 @@ Run these commands in your terminal:
 npm install firebase
 ```
 
-## 7. Firestore Security Rules (Optional)
+## 8. Firestore Security Rules (Optional)
 
 For production, update your Firestore security rules in the Firebase Console:
 
@@ -84,7 +101,7 @@ service cloud.firestore {
 }
 ```
 
-## 8. Test the Integration
+## 9. Test the Integration
 
 1. Start your development server: `npm run dev`
 2. Try registering a new account
@@ -100,12 +117,14 @@ service cloud.firestore {
 
 ✅ **Data Storage**
 - User profiles stored in Firestore
-- Application tickets saved to Firestore
+- Application data saved to Realtime Database
+- Application tickets saved to Realtime Database
 - Real-time data synchronization
 - Project tracking data
 
 ✅ **Real-time Updates**
-- Dashboard automatically updates when new tickets are created
+- Dashboard automatically updates when new applications are submitted
+- Real-time synchronization across all connected devices
 - No need to refresh the page to see new data
 
 ## Troubleshooting

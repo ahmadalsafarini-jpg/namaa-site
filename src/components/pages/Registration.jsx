@@ -3,6 +3,44 @@ import { Card, PrimaryButton, Input } from "../ui";
 import { createUser, registerUser } from "../../firebase/auth";
 import { createUserProfile } from "../../firebase/firestore";
 
+// Helper function to convert Firebase auth errors to user-friendly messages
+const getAuthErrorMessage = (error) => {
+  if (!error) return 'An unexpected error occurred. Please try again.';
+  
+  // Firebase auth error codes
+  switch (error) {
+    case 'auth/user-not-found':
+      return 'No account found with this email address.';
+    case 'auth/wrong-password':
+      return 'Incorrect password. Please try again.';
+    case 'auth/invalid-email':
+      return 'Please enter a valid email address.';
+    case 'auth/user-disabled':
+      return 'This account has been disabled. Please contact support.';
+    case 'auth/too-many-requests':
+      return 'Too many failed attempts. Please try again later.';
+    case 'auth/network-request-failed':
+      return 'Network error. Please check your connection and try again.';
+    case 'auth/invalid-credential':
+      return 'Invalid email or password. Please check your credentials.';
+    case 'auth/email-already-in-use':
+      return 'An account with this email already exists. Please try signing in instead.';
+    case 'auth/weak-password':
+      return 'Password should be at least 6 characters.';
+    case 'auth/operation-not-allowed':
+      return 'This sign-in method is not enabled.';
+    default:
+      // Check if it's a generic error message
+      if (error.includes('password')) {
+        return 'Password should be at least 6 characters.';
+      }
+      if (error.includes('email') || error.includes('already')) {
+        return 'An account with this email already exists. Please try signing in instead.';
+      }
+      return 'Registration failed. Please try again.';
+  }
+};
+
 const Registration = ({ lead, onRegistered }) => {
   const [form, setForm] = useState({ 
     name: lead?.name || "", 
@@ -64,10 +102,12 @@ const Registration = ({ lead, onRegistered }) => {
                   uid: user.uid || user.id
                 });
               } else {
-                setError(authResult.error);
+                const errorMessage = getAuthErrorMessage(authResult.error);
+                setError(errorMessage);
               }
             } catch (err) {
-              setError(err.message || "An unexpected error occurred. Please try again.");
+              const errorMessage = getAuthErrorMessage(err.message);
+              setError(errorMessage);
               console.error("Registration error:", err);
             } finally {
               setLoading(false);

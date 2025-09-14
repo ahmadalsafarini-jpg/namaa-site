@@ -2,11 +2,11 @@ import { Banknote, HandCoins, Info as InfoIcon } from "lucide-react";
 import { Card, PrimaryButton, GhostButton, Pill } from "../ui";
 import { MOCK_COMPANIES } from "../../constants";
 
-const Matching = ({ ticket, onProceedPay, onFinancing, onMoreInfo }) => (
+const Matching = ({ application, onProceedPay, onFinancing, onMoreInfo }) => (
   <div className="mx-auto max-w-5xl px-4 py-10">
     <div className="mb-4 flex items-center justify-between">
       <h2 className="text-2xl font-semibold">Solar Company Matching</h2>
-      <Pill variant="info">Ticket: {ticket.name}</Pill>
+      <Pill variant="info">Application: {application.projectName}</Pill>
     </div>
     <div className="grid gap-4 md:grid-cols-3">
       {MOCK_COMPANIES.map((c) => (

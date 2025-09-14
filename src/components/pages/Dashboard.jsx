@@ -2,26 +2,26 @@ import { useState, useEffect } from "react";
 import { Mail, CalendarDays } from "lucide-react";
 import { Card, PrimaryButton, Pill, Progress } from "../ui";
 import { formatDate, progressForStatus } from "../../utils";
-import { getUserTickets, subscribeToUserTickets } from "../../firebase/firestore";
+import { getUserApplications, subscribeToUserApplications } from "../../firebase/realtime-db";
 
-const Dashboard = ({ user, tickets, onOpen }) => {
-  const [firestoreTickets, setFirestoreTickets] = useState([]);
+const Dashboard = ({ user, applications, onOpen, onApplicationClick }) => {
+  const [firestoreApplications, setFirestoreApplications] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user?.uid) return;
 
-    // Subscribe to real-time updates
-    const unsubscribe = subscribeToUserTickets(user.uid, (tickets) => {
-      setFirestoreTickets(tickets);
+    // Subscribe to real-time updates for applications
+    const unsubscribe = subscribeToUserApplications(user.uid, (apps) => {
+      setFirestoreApplications(apps || []);
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, [user?.uid]);
 
-  // Use Firestore tickets if available, fallback to props
-  const displayTickets = firestoreTickets.length > 0 ? firestoreTickets : tickets;
+  // Use Firestore applications if available, fallback to props
+  const displayApplications = firestoreApplications.length > 0 ? firestoreApplications : applications;
 
   return (
   <div className="mx-auto max-w-6xl px-4 py-10">
@@ -44,22 +44,26 @@ const Dashboard = ({ user, tickets, onOpen }) => {
         </div>
       </Card>
       <Card>
-        <h3 className="font-semibold">Your tickets</h3>
+        <h3 className="font-semibold">Your applications</h3>
         <div className="mt-3 grid gap-3">
-          {loading && <p className="text-sm text-slate-600">Loading tickets...</p>}
-          {!loading && displayTickets.length === 0 && <p className="text-sm text-slate-600">No tickets yet. Create your first application.</p>}
-          {displayTickets.map((t) => (
-            <div key={t.id} className="rounded-xl border border-slate-200 p-3">
+          {loading && <p className="text-sm text-slate-600">Loading applications...</p>}
+          {!loading && displayApplications.length === 0 && <p className="text-sm text-slate-600">No applications yet. Create your first application.</p>}
+          {displayApplications.map((app) => (
+            <button
+              key={app.id}
+              onClick={() => onApplicationClick && onApplicationClick(app)}
+              className="w-full rounded-xl border border-slate-200 p-3 text-left hover:border-slate-300 hover:bg-slate-50 transition-colors"
+            >
               <div className="flex items-center justify-between">
-                <div className="font-medium">{t.name}</div>
-                <Pill variant={t.status === "Completed" ? "success" : "info"}>{t.status}</Pill>
+                <div className="font-medium">{app.projectName}</div>
+                <Pill variant={app.status === "Completed" ? "success" : "info"}>{app.status}</Pill>
               </div>
-              <div className="mt-2"><Progress value={progressForStatus(t.status)} /></div>
+              <div className="mt-2"><Progress value={progressForStatus(app.status)} /></div>
               <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
-                <span>{t.systemType}</span>
-                <span>Submitted: {t.submittedAt}</span>
+                <span>{app.systemType}</span>
+                <span>Submitted: {app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'Unknown'}</span>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </Card>

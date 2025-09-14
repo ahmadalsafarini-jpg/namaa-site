@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, PrimaryButton, GhostButton, Select, TextArea, Pill } from "../ui";
 
-const Financing = ({ ticket, company, onSubmit, onCancel }) => {
+const Financing = ({ application, company, onSubmit, onCancel }) => {
   const [type, setType] = useState("");
   const [org, setOrg] = useState("");
   const [notes, setNotes] = useState("");
@@ -11,7 +11,7 @@ const Financing = ({ ticket, company, onSubmit, onCancel }) => {
     <div className="mx-auto max-w-3xl px-4 py-10">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Financing Application</h2>
-        <Pill variant="info">Ticket: {ticket.name}</Pill>
+        <Pill variant="info">Application: {application.projectName}</Pill>
       </div>
       <Card>
         <div className="mb-4 rounded-xl bg-emerald-50 p-4 text-sm text-emerald-800">

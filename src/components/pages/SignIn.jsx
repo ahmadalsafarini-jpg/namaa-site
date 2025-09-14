@@ -2,7 +2,45 @@ import React, { useState } from "react";
 import { Card } from "../ui";
 import { PrimaryButton } from "../ui/Buttons";
 import { Input } from "../ui/FormInputs";
-import { loginUser } from "../../firebase/auth";
+import { signInUser } from "../../firebase/auth";
+
+// Helper function to convert Firebase auth errors to user-friendly messages
+const getAuthErrorMessage = (error) => {
+  if (!error) return 'An unexpected error occurred. Please try again.';
+  
+  // Firebase auth error codes
+  switch (error) {
+    case 'auth/user-not-found':
+      return 'No account found with this email address.';
+    case 'auth/wrong-password':
+      return 'Incorrect password. Please try again.';
+    case 'auth/invalid-email':
+      return 'Please enter a valid email address.';
+    case 'auth/user-disabled':
+      return 'This account has been disabled. Please contact support.';
+    case 'auth/too-many-requests':
+      return 'Too many failed attempts. Please try again later.';
+    case 'auth/network-request-failed':
+      return 'Network error. Please check your connection and try again.';
+    case 'auth/invalid-credential':
+      return 'Invalid email or password. Please check your credentials.';
+    case 'auth/email-already-in-use':
+      return 'An account with this email already exists.';
+    case 'auth/weak-password':
+      return 'Password should be at least 6 characters.';
+    case 'auth/operation-not-allowed':
+      return 'This sign-in method is not enabled.';
+    default:
+      // Check if it's a generic error message
+      if (error.includes('password')) {
+        return 'Incorrect password. Please try again.';
+      }
+      if (error.includes('email') || error.includes('user')) {
+        return 'No account found with this email address.';
+      }
+      return 'Invalid email or password. Please check your credentials.';
+  }
+};
 
 const SignIn = ({ onLoggedIn }) => {
   const [email, setEmail] = useState("");
@@ -19,10 +57,22 @@ const SignIn = ({ onLoggedIn }) => {
     setLoading(true);
     
     try {
-      const user = await loginUser({ email, password });
-      onLoggedIn(user);
+      const result = await signInUser(email, password);
+      if (result.success) {
+        onLoggedIn({
+          uid: result.user.uid || result.user.id,
+          name: result.user.displayName || result.user.name || "User",
+          email: result.user.email || email,
+          phone: result.user.phoneNumber || result.user.phone || ""
+        });
+      } else {
+        // Handle specific Firebase auth errors
+        const errorMessage = getAuthErrorMessage(result.error);
+        setError(errorMessage);
+      }
     } catch (err) {
-      setError(err.message || 'Invalid credentials');
+      const errorMessage = getAuthErrorMessage(err.message);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
