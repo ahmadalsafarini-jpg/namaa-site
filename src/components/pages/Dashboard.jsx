@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Mail, CalendarDays } from "lucide-react";
+import { Mail, CalendarDays, Building, MapPin, Zap } from "lucide-react";
 import { Card, PrimaryButton, Pill, Progress } from "../ui";
 import { formatDate, progressForStatus } from "../../utils";
 import { getUserApplications, subscribeToUserApplications } from "../../firebase/realtime-db";
@@ -57,6 +57,20 @@ const Dashboard = ({ user, applications, onOpen, onApplicationClick }) => {
               <div className="flex items-center justify-between">
                 <div className="font-medium">{app.projectName}</div>
                 <Pill variant={app.status === "Completed" ? "success" : "info"}>{app.status}</Pill>
+              </div>
+              <div className="mt-2 flex items-center gap-4 text-xs text-slate-500">
+                <div className="flex items-center gap-1">
+                  <Building className="h-3 w-3" />
+                  {app.facilityType}
+                </div>
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-3 w-3" />
+                  {app.location}
+                </div>
+                <div className="flex items-center gap-1">
+                  <Zap className="h-3 w-3" />
+                  {app.systemType}
+                </div>
               </div>
               <div className="mt-2"><Progress value={progressForStatus(app.status)} /></div>
               <div className="mt-2 flex items-center justify-between text-xs text-slate-500">

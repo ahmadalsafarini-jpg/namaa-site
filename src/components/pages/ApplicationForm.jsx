@@ -259,7 +259,7 @@ const ApplicationForm = ({ onSubmit, onCancel, user }) => {
             value={f.facilityType} 
             onChange={(v) => setF((s) => ({ ...s, facilityType: v }))} 
             required 
-            options={["Commercial", "Industrial", "Educational", "Healthcare", "Agricultural"]} 
+            options={["Residential","Commercial", "Industrial", "Educational", "Healthcare", "Agricultural"]} 
           />
           <Select 
             label="Location" 

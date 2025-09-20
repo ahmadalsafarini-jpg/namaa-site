@@ -8,9 +8,12 @@ import {
   Dashboard, 
   ApplicationForm, 
   TicketStatus, 
-  Matching, 
-  Financing, 
-  FinalProject 
+  AdminLogin,
+  AdminDashboard,
+  ClientDetail,
+  Notifications,
+  Help,
+  Profile
 } from "./components/pages";
 import { nextStatus, progressForStatus } from "./utils";
 import { onAuthStateChange, getCurrentUser, signOutUser } from "./firebase/auth";
@@ -29,6 +32,22 @@ export default function NamaaPrototype() {
   const activeApplication = useMemo(() => applications.find((a) => a.id === activeApplicationId) || applications[0], [applications, activeApplicationId]);
   const [matchingCompany, setMatchingCompany] = useState(null);
   const [project, setProject] = useState(null);
+  
+  // Admin state
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [selectedClient, setSelectedClient] = useState(null);
+
+  // Navigation event listener
+  useEffect(() => {
+    const handleNavigation = (event) => {
+      const targetRoute = event.detail;
+      console.log('🚀 Navigation event received:', targetRoute);
+      setRoute(targetRoute);
+    };
+
+    window.addEventListener('nav:goto', handleNavigation);
+    return () => window.removeEventListener('nav:goto', handleNavigation);
+  }, []);
 
   // Listen to Firebase auth state changes
   useEffect(() => {
@@ -59,12 +78,12 @@ export default function NamaaPrototype() {
     return () => unsubscribe();
   }, []);
 
-  // Ensure activeApplication is set when navigating to matching/financing/project pages
+  // Ensure activeApplication is set when needed
   useEffect(() => {
-    if ((route === "matching" || route === "financing" || route === "project") && applications.length > 0 && !activeApplicationId) {
+    if (applications.length > 0 && !activeApplicationId) {
       setActiveApplicationId(applications[0].id);
     }
-  }, [route, applications, activeApplicationId]);
+  }, [applications, activeApplicationId]);
 
   // Load user's applications from Realtime Database
   const loadUserApplications = async (userId) => {
@@ -76,8 +95,8 @@ export default function NamaaPrototype() {
       if (result.success) {
         setApplications(result.applications || []);
         // Set the first application as active if none is selected
-        if (result.applications && result.applications.length > 0 && !activeApplicationId) {
-          setActiveApplicationId(result.applications[0].id);
+        if (result.applications && result.applications.length > 0) {
+          setActiveApplicationId((prev) => prev || result.applications[0].id);
         }
       } else {
         console.error('Failed to load applications:', result.error);
@@ -98,13 +117,13 @@ export default function NamaaPrototype() {
     const unsubscribe = subscribeToUserApplications(user.uid, (applications) => {
       setApplications(applications || []);
       // Set the first application as active if none is selected
-      if (applications && applications.length > 0 && !activeApplicationId) {
-        setActiveApplicationId(applications[0].id);
+      if (applications && applications.length > 0) {
+        setActiveApplicationId((prev) => prev || applications[0].id);
       }
     });
 
     return () => unsubscribe();
-  }, [user?.uid, activeApplicationId]);
+  }, [user?.uid]);
 
   const goto = (r) => setRoute(r);
 
@@ -139,11 +158,19 @@ export default function NamaaPrototype() {
     
     const newStatus = nextStatus(application.status);
     
+    console.log('🚀 Advancing status for:', application.projectName, 'from', application.status, 'to', newStatus);
+    console.log('🔒 Setting activeApplicationId to:', application.id);
+    
+    // Ensure we maintain the current selection
+    setActiveApplicationId(application.id);
+    
     // Save to Realtime Database
     try {
       const result = await updateApplication(application.id, { status: newStatus });
       if (!result.success) {
         console.error('Failed to update application status:', result.error);
+      } else {
+        console.log('✅ Status updated successfully in database');
       }
     } catch (error) {
       console.error('Error updating application status:', error);
@@ -151,11 +178,7 @@ export default function NamaaPrototype() {
   };
 
   useEffect(() => {
-    const app = activeApplication;
-    if (app && app.status === "Matched") {
-      const to = setTimeout(() => goto("matching"), 600);
-      return () => clearTimeout(to);
-    }
+    // No external navigation now; matching/financing live inside Ticket page
   }, [applications]);
 
   const handleProceedPay = async (company) => {
@@ -206,6 +229,31 @@ export default function NamaaPrototype() {
   };
   const handleMoreInfo = (company) => { alert(`A clarification request was sent to ${company.name}. They will revise their offer.`); };
 
+  // Admin handlers
+  const handleAdminLogin = () => {
+    setIsAdmin(true);
+    setRoute("admin-dashboard");
+  };
+
+  const handleAdminLogout = () => {
+    setIsAdmin(false);
+    setSelectedClient(null);
+    setRoute("landing");
+  };
+
+  const handleViewClient = (client) => {
+    setSelectedClient(client);
+    setRoute("admin-client");
+  };
+
+  const handleClientSave = (updatedClient) => {
+    setSelectedClient(updatedClient);
+    // Update the applications list
+    setApplications(prev => prev.map(app => 
+      app.id === updatedClient.id ? updatedClient : app
+    ));
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -219,7 +267,7 @@ export default function NamaaPrototype() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <TopNav onNavigate={goto} route={route} user={user} onLogout={handleLogout} />
+      {!route.startsWith('admin-') && <TopNav onNavigate={goto} route={route} user={user} onLogout={handleLogout} />}
 
       <AnimatePresence mode="wait">
         {route === "landing" && (
@@ -240,11 +288,29 @@ export default function NamaaPrototype() {
           </motion.div>
         )}
 
-         {route === "dashboard" && user && (
-           <motion.div key="dashboard" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+        {route === "notifications" && (
+          <motion.div key="notifications" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <Notifications />
+          </motion.div>
+        )}
+
+        {route === "help" && (
+          <motion.div key="help" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <Help />
+          </motion.div>
+        )}
+
+        {route === "profile" && (
+          <motion.div key="profile" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <Profile user={user || {}} onSave={(u)=> setUser(prev => ({ ...prev, ...u }))} />
+          </motion.div>
+        )}
+
+        {route === "dashboard" && user && (
+          <motion.div key="dashboard" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
              <Dashboard user={user} applications={applications} onOpen={() => goto("application")} onApplicationClick={handleApplicationClick} />
-           </motion.div>
-         )}
+          </motion.div>
+        )}
 
         {route === "application" && (
           <motion.div key="application" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
@@ -253,76 +319,42 @@ export default function NamaaPrototype() {
         )}
 
          {route === "ticket" && (
-           <motion.div key="ticket" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-             <TicketStatus user={user} onAdvance={advanceStatus} onGoMatching={() => goto("matching")} onNewApplication={() => goto("application")} loading={applicationsLoading} selectedApplicationId={activeApplicationId} />
-           </motion.div>
-         )}
+          <motion.div key="ticket" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+             <TicketStatus 
+               user={user}
+               onAdvance={advanceStatus}
+               onGoProject={() => goto("project")}
+               onGoMatching={() => setRoute("ticket")}
+               onGoFinancing={() => setRoute("ticket")}
+               onNewApplication={() => goto("application")}
+               loading={applicationsLoading}
+               selectedApplicationId={activeApplicationId}
+               onSelectApplication={(id) => setActiveApplicationId(id)}
+             />
+          </motion.div>
+        )}
 
-         {route === "matching" && (
-           <motion.div key="matching" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-             {activeApplication ? (
-               <Matching application={activeApplication} onProceedPay={handleProceedPay} onFinancing={handleApplyFinancing} onMoreInfo={handleMoreInfo} />
-             ) : (
-               <div className="mx-auto max-w-3xl px-4 py-10">
-                 <div className="text-center">
-                   <h2 className="text-2xl font-semibold mb-4">No Application Selected</h2>
-                   <p className="text-slate-600 mb-6">Please select an application from your dashboard to view matching options.</p>
-                   <button 
-                     onClick={() => goto("dashboard")} 
-                     className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
-                   >
-                     Go to Dashboard
-                   </button>
-                 </div>
-               </div>
-             )}
-           </motion.div>
-         )}
 
-         {route === "financing" && (
-           <motion.div key="financing" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-             {activeApplication ? (
-               <Financing application={activeApplication} company={matchingCompany} onSubmit={handleFinancingSubmit} onCancel={() => goto("matching")} />
-             ) : (
-               <div className="mx-auto max-w-3xl px-4 py-10">
-                 <div className="text-center">
-                   <h2 className="text-2xl font-semibold mb-4">No Application Selected</h2>
-                   <p className="text-slate-600 mb-6">Please select an application from your dashboard to view financing options.</p>
-                   <button 
-                     onClick={() => goto("dashboard")} 
-                     className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
-                   >
-                     Go to Dashboard
-                   </button>
-                 </div>
-               </div>
-             )}
-           </motion.div>
-         )}
+        {/* Admin Routes */}
+        {route === "admin-login" && (
+          <motion.div key="admin-login" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <AdminLogin onLogin={handleAdminLogin} />
+          </motion.div>
+        )}
 
-        {route === "project" && (
-          <motion.div key="project" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-            {project || activeApplication ? (
-              <FinalProject project={project || {
-                name: activeApplication?.projectName || "Solar Project",
-                phase: activeApplication?.status === "In Execution" ? "Installation" : 
-                       activeApplication?.status === "Under Review" ? "Financing" :
-                       activeApplication?.status === "Completed" ? "Completed" : "Planning"
-              }} />
-            ) : (
-              <div className="mx-auto max-w-3xl px-4 py-10">
-                <div className="text-center">
-                  <h2 className="text-2xl font-semibold mb-4">No Project Available</h2>
-                  <p className="text-slate-600 mb-6">Please complete the application process to view your project details.</p>
-                  <button 
-                    onClick={() => goto("dashboard")} 
-                    className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
-                  >
-                    Go to Dashboard
-                  </button>
-                </div>
-              </div>
-            )}
+        {route === "admin-dashboard" && isAdmin && (
+          <motion.div key="admin-dashboard" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <AdminDashboard onLogout={handleAdminLogout} onViewClient={handleViewClient} />
+          </motion.div>
+        )}
+
+        {route === "admin-client" && isAdmin && selectedClient && (
+          <motion.div key="admin-client" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <ClientDetail 
+              application={selectedClient} 
+              onBack={() => setRoute("admin-dashboard")} 
+              onSave={handleClientSave}
+            />
           </motion.div>
         )}
       </AnimatePresence>

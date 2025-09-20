@@ -5,9 +5,8 @@ const TopNav = ({ onNavigate, route, user, onLogout }) => {
     { key: "register", label: "Register", public: true, auth: false }, // Only when not logged in
     { key: "dashboard", label: "Dashboard", public: false, auth: true }, // Only when logged in
     { key: "ticket", label: "Ticket", public: false, auth: true }, // Only when logged in
-    { key: "matching", label: "Matching", public: false, auth: true }, // Only when logged in
-    { key: "financing", label: "Financing", public: false, auth: true }, // Only when logged in
-    { key: "project", label: "Project", public: false, auth: true }, // Only when logged in
+    { key: "notifications", label: "Notifications", public: false, auth: true },
+    { key: "help", label: "Help", public: false, auth: true },
   ];
   
   const visible = links.filter((l) => {
@@ -40,12 +39,15 @@ const TopNav = ({ onNavigate, route, user, onLogout }) => {
             </button>
           ))}
           {user ? (
-            <button 
-              onClick={onLogout} 
-              className="ml-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-            >
-              Sign out
-            </button>
+            <div className="relative group ml-1">
+              <button className="rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
+                {user.name?.split(' ')[0] || 'Profile'} ▾
+              </button>
+              <div className="absolute right-0 mt-1 hidden w-44 rounded-xl border border-slate-200 bg-white p-2 shadow-md group-hover:block">
+                <button onClick={() => onNavigate('profile')} className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-100">Settings</button>
+                <button onClick={onLogout} className="block w-full rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50">Sign out</button>
+              </div>
+            </div>
           ) : null}
         </nav>
       </div>
