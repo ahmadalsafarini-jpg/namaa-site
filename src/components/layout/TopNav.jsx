@@ -23,7 +23,12 @@ const TopNav = ({ onNavigate, route, user, onLogout }) => {
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white shadow-sm">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <div className="flex items-center gap-2">
-          <img src="/logo2.svg" alt="Namaa Logo" className="h-10 w-auto" />
+          <img 
+            src="/brand-logo.png" 
+            alt="Namaa Logo" 
+            className="h-10 w-auto"
+            onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/logo2.svg"; }}
+          />
         </div>
         <nav className="flex items-center gap-1">
           {visible.map((l) => (
