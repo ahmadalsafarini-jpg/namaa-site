@@ -14,12 +14,12 @@ const Help = () => {
         <Card>
           <div className="font-semibold flex items-center gap-2"><Mail className="h-5 w-5"/> Email Support</div>
           <p className="mt-2 text-sm text-slate-600">Reach out to our team for assistance.</p>
-          <a href="mailto:hello@namaa.energy" className="mt-3 inline-block text-sm text-emerald-700 hover:underline">hello@namaa.energy</a>
+          <a href="mailto:info@namaa.energy" className="mt-3 inline-block text-sm text-emerald-700 hover:underline">info@namaa.energy</a>
         </Card>
         <Card>
           <div className="font-semibold flex items-center gap-2"><Phone className="h-5 w-5"/> Contact</div>
           <p className="mt-2 text-sm text-slate-600">Call us between 9:00–17:00.</p>
-          <span className="mt-3 inline-block text-sm">+974 0000 0000</span>
+          <span className="mt-3 inline-block text-sm">+974 3308 5766</span>
         </Card>
       </div>
     </div>

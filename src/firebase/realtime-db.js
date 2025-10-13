@@ -105,9 +105,9 @@ export const getUserApplications = async (userId) => {
       // Sort by creation date (newest first)
       applications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       
-      return { success: true, data: applications };
+      return { success: true, applications };
     } else {
-      return { success: true, data: [] };
+      return { success: true, applications: [] };
     }
   } catch (error) {
     console.error('Error getting user applications:', error);

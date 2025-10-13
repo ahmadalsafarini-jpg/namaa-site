@@ -31,6 +31,6 @@ export const db = getFirestore(app);
 export const database = getDatabase(app);
 
 // Initialize Firebase Storage and get a reference to the service
-export const storage = getStorage(app, "gs://namaa-b268d.firebasestorage.app");
+export const storage = getStorage(app);
 
 export default app;

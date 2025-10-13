@@ -39,7 +39,7 @@ const Landing = ({ onLeadSubmit }) => {
             Empowering Facilities with Clean Energy
           </h1>
           <p className="mx-auto max-w-2xl text-pretty md:text-lg">
-            Namaa connects facility owners, institutional partners, and solar companies to deliver turnkey renewable energy solutions.
+          Namaa connects facility owners, institutional partners, and solar companies in one platform empowering them with integrated tools to design, finance, and deploy removing the complexity of going green.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <PrimaryButton onClick={() => document.getElementById("lead-capture")?.scrollIntoView({ behavior: "smooth" })}>
@@ -122,7 +122,7 @@ const Landing = ({ onLeadSubmit }) => {
               <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-sm">3</div>
               <h3 className="font-bold text-lg mb-3">Finance & Execute</h3>
               <p className="text-slate-600 leading-relaxed">Secure institutional financing through our partners or proceed directly. Track your project from installation to generation.</p>
-              <div className="mt-4 text-sm text-amber-600 font-medium">💰 Up to 100% financing available</div>
+              <div className="mt-4 text-sm text-amber-600 font-medium">💰 Up to 100% financing</div>
             </div>
           </div>
         </div>
@@ -214,7 +214,7 @@ const Landing = ({ onLeadSubmit }) => {
                 <ShieldCheck className="h-8 w-8 text-white" />
               </div>
               <h3 className="font-bold text-xl mb-4">QFC Compliant</h3>
-              <p className="text-slate-600 leading-relaxed mb-4">Fully aligned with Qatar Financial Centre regulations, ensuring transparent, institutional-grade project management and compliance.</p>
+              <p className="text-slate-600 leading-relaxed mb-4">Registered under Qatar Financial Centre, ensuring transparent, institutional-grade project management and compliance.</p>
               <div className="text-emerald-600 font-medium">✓ Regulatory Compliance</div>
           </Card>
           </motion.div>
@@ -254,7 +254,7 @@ const Landing = ({ onLeadSubmit }) => {
       </Section>
 
       {/* Trusted Partners */}
-      <Section id="partners" title="Trusted by Leading Organizations" subtitle="Partnering with Qatar's most respected institutions and companies.">
+      <Section id="partners" title="Strategic Partners and Organizations" subtitle="Namaa Energy is heading for Partnering with Qatar's most respected institutions and companies.">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[
             { name: "QDB", desc: "Qatar Development Bank", logo: "🏛️" },
@@ -305,8 +305,8 @@ const Landing = ({ onLeadSubmit }) => {
             </button>
           </div>
           <div className="grid gap-2 text-sm text-slate-600">
-            <div className="flex items-center gap-2"><Phone className="h-4 w-4"/> +974 0000 0000</div>
-            <div className="flex items-center gap-2"><Mail className="h-4 w-4"/> hello@namaa.energy</div>
+            <div className="flex items-center gap-2"><Phone className="h-4 w-4"/> +974 3308 5766</div>
+            <div className="flex items-center gap-2"><Mail className="h-4 w-4"/> info@namaa.energy</div>
             <div className="flex items-center gap-2"><MapPin className="h-4 w-4"/> Doha, Qatar</div>
           </div>
         </div>
