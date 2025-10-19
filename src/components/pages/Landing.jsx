@@ -254,7 +254,7 @@ const Landing = ({ onLeadSubmit }) => {
       </Section>
 
       {/* Trusted Partners */}
-      <Section id="partners" title="Strategic Partners and Organizations" subtitle="Namaa Energy is heading for Partnering with Qatar's most respected institutions and companies.">
+      <Section id="partners" title="Potential Srategic Partners and Organizations" subtitle="Namaa Energy is heading for Partnering with Qatar's most respected institutions and companies.">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[
             { name: "QDB", desc: "Qatar Development Bank", logo: "🏛️" },
