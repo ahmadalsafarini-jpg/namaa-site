@@ -44,12 +44,31 @@ export default function NamaaPrototype() {
   const [energyCompany, setEnergyCompany] = useState(null);
   const [selectedCompanyClient, setSelectedCompanyClient] = useState(null);
 
+  // Handle browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = (event) => {
+      const route = event.state?.route || window.location.hash.slice(1) || 'landing';
+      console.log('🔙 Browser back/forward to:', route);
+      setRoute(route);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    // Set initial route from URL hash
+    const initialRoute = window.location.hash.slice(1) || 'landing';
+    if (initialRoute !== 'landing') {
+      setRoute(initialRoute);
+    }
+
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   // Navigation event listener
   useEffect(() => {
     const handleNavigation = (event) => {
       const targetRoute = event.detail;
       console.log('🚀 Navigation event received:', targetRoute);
-      setRoute(targetRoute);
+      goto(targetRoute);
     };
 
     window.addEventListener('nav:goto', handleNavigation);
@@ -132,7 +151,11 @@ export default function NamaaPrototype() {
     return () => unsubscribe();
   }, [user?.uid]);
 
-  const goto = (r) => setRoute(r);
+  const goto = (r) => {
+    setRoute(r);
+    // Push to browser history
+    window.history.pushState({ route: r }, '', `#${r}`);
+  };
 
   const handleLeadSubmit = (l) => { setLead(l); goto("register"); };
   const handleRegistered = (u) => { setUser(u); goto("dashboard"); };
