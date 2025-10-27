@@ -52,7 +52,7 @@ const ApplicationForm = ({ onSubmit, onCancel, user }) => {
     }));
     
     try {
-      const uploadResult = await uploadMultipleFiles(newFiles, user?.uid || "anonymous", tempAppId);
+      const uploadResult = await uploadMultipleFiles(newFiles, user?.uid || "anonymous", tempAppId, category);
       
       if (uploadResult.success) {
         // Add only new uploaded files to the uploadedFiles state

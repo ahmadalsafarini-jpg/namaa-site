@@ -308,8 +308,8 @@ const TicketStatus = ({ user, onAdvance, onGoMatching, onGoProject, onGoFinancin
               )}
 
               {activeTab === 'project' && (
-              <div className="grid grid-cols-2 gap-2 md:grid-cols-6">
-            {STATUS_FLOW.filter((s) => s !== "Pending").map((s) => (
+              <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
+            {STATUS_FLOW.map((s) => (
               <div key={s} className={`rounded-xl border px-3 py-2 text-center text-xs ${
                     STATUS_FLOW.indexOf(s) <= STATUS_FLOW.indexOf(selectedApplication.status)
                   ? "border-emerald-300 bg-emerald-50 text-emerald-700"
@@ -323,11 +323,6 @@ const TicketStatus = ({ user, onAdvance, onGoMatching, onGoProject, onGoFinancin
 
               {activeTab === 'project' && (
               <div className="flex flex-wrap items-center gap-3 pt-4">
-                {selectedApplication.status !== "Completed" && (
-                  <PrimaryButton onClick={() => onAdvance(selectedApplication)}>
-                    Advance Status
-              </PrimaryButton>
-            )}
                 {selectedApplication.status === "Matched" && (
                   <GhostButton onClick={() => setActiveTab('matching')}>View Matching & Offers</GhostButton>
                 )}

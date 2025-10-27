@@ -1,5 +1,4 @@
 export const STATUS_FLOW = [
-  "Pending",
   "Under Review",
   "Matched",
   "Approved",

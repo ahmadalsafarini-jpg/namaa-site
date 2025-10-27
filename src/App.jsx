@@ -13,11 +13,14 @@ import {
   ClientDetail,
   Notifications,
   Help,
-  Profile
+  Profile,
+  EnergyCompanyLogin,
+  EnergyCompanyDashboard,
+  EnergyCompanyClientDetail
 } from "./components/pages";
 import { nextStatus, progressForStatus } from "./utils";
 import { onAuthStateChange, getCurrentUser, signOutUser } from "./firebase/auth";
-import { getUserApplications, subscribeToUserApplications, updateApplication } from "./firebase/realtime-db";
+import { getUserApplications, subscribeToUserApplications, updateApplication, loginEnergyCompany } from "./firebase/realtime-db";
 
 
 /******************** Root App ********************/
@@ -36,6 +39,10 @@ export default function NamaaPrototype() {
   // Admin state
   const [isAdmin, setIsAdmin] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
+
+  // Energy Company state
+  const [energyCompany, setEnergyCompany] = useState(null);
+  const [selectedCompanyClient, setSelectedCompanyClient] = useState(null);
 
   // Navigation event listener
   useEffect(() => {
@@ -254,6 +261,28 @@ export default function NamaaPrototype() {
     ));
   };
 
+  // Energy Company handlers
+  const handleEnergyCompanyLogin = async (username, password) => {
+    const result = await loginEnergyCompany(username, password);
+    if (result.success) {
+      setEnergyCompany(result.data);
+      setRoute("energy-company-dashboard");
+    } else {
+      throw new Error(result.error);
+    }
+  };
+
+  const handleEnergyCompanyLogout = () => {
+    setEnergyCompany(null);
+    setSelectedCompanyClient(null);
+    setRoute("landing");
+  };
+
+  const handleViewCompanyClient = (client) => {
+    setSelectedCompanyClient(client);
+    setRoute("energy-company-client");
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -267,7 +296,7 @@ export default function NamaaPrototype() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {!route.startsWith('admin-') && <TopNav onNavigate={goto} route={route} user={user} onLogout={handleLogout} />}
+      {!route.startsWith('admin-') && !route.startsWith('energy-company-') && <TopNav onNavigate={goto} route={route} user={user} onLogout={handleLogout} />}
 
       <AnimatePresence mode="wait">
         {route === "landing" && (
@@ -354,6 +383,33 @@ export default function NamaaPrototype() {
               application={selectedClient} 
               onBack={() => setRoute("admin-dashboard")} 
               onSave={handleClientSave}
+            />
+          </motion.div>
+        )}
+
+        {/* Energy Company Routes */}
+        {route === "energy-company-login" && (
+          <motion.div key="energy-company-login" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <EnergyCompanyLogin onLogin={handleEnergyCompanyLogin} />
+          </motion.div>
+        )}
+
+        {route === "energy-company-dashboard" && energyCompany && (
+          <motion.div key="energy-company-dashboard" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <EnergyCompanyDashboard 
+              company={energyCompany} 
+              onLogout={handleEnergyCompanyLogout} 
+              onViewClient={handleViewCompanyClient}
+            />
+          </motion.div>
+        )}
+
+        {route === "energy-company-client" && energyCompany && selectedCompanyClient && (
+          <motion.div key="energy-company-client" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <EnergyCompanyClientDetail 
+              client={selectedCompanyClient} 
+              company={energyCompany}
+              onBack={() => setRoute("energy-company-dashboard")}
             />
           </motion.div>
         )}

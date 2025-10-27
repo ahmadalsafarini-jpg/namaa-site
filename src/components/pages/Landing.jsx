@@ -303,6 +303,15 @@ const Landing = ({ onLeadSubmit }) => {
             >
               Admin Portal
             </button>
+            <button 
+              onClick={() => {
+                console.log('🚀 Energy Company Portal button clicked, dispatching nav:goto event');
+                window.dispatchEvent(new CustomEvent('nav:goto', { detail: 'energy-company-login' }));
+              }}
+              className="text-left hover:text-emerald-600 text-slate-500 flex items-center gap-1"
+            >
+              <Zap className="h-3 w-3" /> Energy Company Portal
+            </button>
           </div>
           <div className="grid gap-2 text-sm text-slate-600">
             <div className="flex items-center gap-2"><Phone className="h-4 w-4"/> +974 3308 5766</div>

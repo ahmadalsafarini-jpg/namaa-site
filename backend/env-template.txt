@@ -1,0 +1,26 @@
+# Server Configuration
+PORT=3001
+NODE_ENV=development
+
+# Email Service Configuration
+# Choose: 'gmail' or 'smtp'
+EMAIL_SERVICE=gmail
+
+# Gmail Configuration (Recommended for quick setup)
+# For Gmail: Use App Password (not your regular password)
+# How to get Gmail App Password: https://support.google.com/accounts/answer/185833
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASSWORD=your-app-password-here
+
+# Admin Email (where notifications will be sent)
+# If not set, notifications will be sent to EMAIL_USER
+ADMIN_EMAIL=alsafarini@namaaenergy.com
+
+# SMTP Configuration (Alternative to Gmail)
+# Uncomment and configure if using custom SMTP server
+# SMTP_HOST=smtp.example.com
+# SMTP_PORT=587
+# SMTP_SECURE=false
+# SMTP_USER=your-smtp-username
+# SMTP_PASSWORD=your-smtp-password
+

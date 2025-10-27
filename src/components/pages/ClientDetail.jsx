@@ -34,7 +34,7 @@ const ClientDetail = ({ application, onBack, onSave }) => {
     
     setUploading(true);
     try {
-      const result = await uploadFile(newDocument.file, application.userId, application.id);
+      const result = await uploadFile(newDocument.file, application.userId, application.id, category);
       if (result.success) {
         const updatedFiles = {
           ...editedApp.files,

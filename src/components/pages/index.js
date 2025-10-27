@@ -10,3 +10,6 @@ export { default as ClientDetail } from './ClientDetail';
 export { default as Notifications } from './Notifications';
 export { default as Help } from './Help';
 export { default as Profile } from './Profile';
+export { default as EnergyCompanyLogin } from './EnergyCompanyLogin';
+export { default as EnergyCompanyDashboard } from './EnergyCompanyDashboard';
+export { default as EnergyCompanyClientDetail } from './EnergyCompanyClientDetail';
