@@ -33,28 +33,46 @@ const Landing = ({ onLeadSubmit }) => {
       </div>
       
       <div className="relative z-0">
-      {/* Enhanced HERO Section - Aurora Solar Inspired */}
-      <div className="relative isolate overflow-hidden bg-gradient-to-br from-slate-900 via-emerald-900 to-slate-900">
-        {/* Background Image with Overlay */}
+      {/* Hero Section - Updated Design */}
+      <div className="relative isolate overflow-hidden">
+        {/* Background Image */}
         <div
-          className="absolute inset-0 -z-20 bg-cover bg-center opacity-40"
+          className="absolute inset-0 -z-20 bg-cover bg-center"
           style={{
             backgroundImage: `url('${HERO_URL}')`,
           }}
         />
         
-        {/* Gradient Overlay for better text contrast */}
-        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-emerald-600/20 via-transparent to-blue-600/20" />
-
-        {/* Animated Grid Background */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.3 }}
-          transition={{ duration: 1 }}
-          className="absolute inset-0 -z-10"
-        >
-          <AnimatedGrid />
-        </motion.div>
+        {/* Black Overlay */}
+        <div className="absolute inset-0 -z-10 bg-black/30" />
+        
+        {/* Animated SVG Gradient Overlay */}
+        <div className="absolute inset-0 -z-10" style={{ opacity: 1 }}>
+          <svg className="h-full w-full" viewBox="0 0 800 400" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1">
+                <stop offset="0%" stopColor="#34d399" stopOpacity="0.25" />
+                <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.25" />
+              </linearGradient>
+            </defs>
+            <motion.g
+              style={{
+                transformOrigin: "50% 50%",
+                transformBox: "fill-box"
+              }}
+              animate={{
+                x: [-47.2864, 47.2864, -47.2864]
+              }}
+              transition={{
+                duration: 20,
+                repeat: Infinity,
+                ease: "linear"
+              }}
+            >
+              <rect x="0" y="0" width="100%" height="100%" fill="url(#g1)" />
+            </motion.g>
+          </svg>
+        </div>
 
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-20 pb-24 sm:pt-28 sm:pb-32">
           <motion.div
@@ -63,18 +81,18 @@ const Landing = ({ onLeadSubmit }) => {
             transition={{ duration: 0.8 }}
             className="text-center"
           >
-            {/* Trust Badge */}
-            <motion.div
+            {/* Badge */}
+            <motion.span
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2, duration: 0.6 }}
-              className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 backdrop-blur-sm px-4 py-2 text-sm text-emerald-300 border border-emerald-500/20 mb-8"
+              className="inline-flex items-center gap-2 rounded-2xl px-3 py-1 text-sm bg-blue-600 text-white mb-8"
             >
-              <Sparkles className="h-4 w-4" />
-              <span className="font-medium">Qatar's Premier Solar Energy Platform</span>
-            </motion.div>
+              <Sun className="h-4 w-4" />
+              Empowering Facilities with Clean Energy
+            </motion.span>
 
-            {/* Main Headline */}
+            {/* Main Heading */}
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -88,7 +106,7 @@ const Landing = ({ onLeadSubmit }) => {
               </span>
             </motion.h1>
 
-            {/* Subheadline */}
+            {/* Description */}
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -147,7 +165,7 @@ const Landing = ({ onLeadSubmit }) => {
                     </div>
                     <div className="text-3xl sm:text-4xl font-bold text-white">
                       {stat.value}
-          </div>
+                    </div>
                   </div>
                   <div className="text-sm text-slate-400">{stat.label}</div>
                 </motion.div>
@@ -155,7 +173,7 @@ const Landing = ({ onLeadSubmit }) => {
             </motion.div>
           </motion.div>
         </div>
-
+        
         {/* Bottom Wave Divider */}
         <div className="absolute bottom-0 left-0 right-0">
           <svg className="w-full h-16 text-white" preserveAspectRatio="none" viewBox="0 0 1200 120">
@@ -196,15 +214,15 @@ const Landing = ({ onLeadSubmit }) => {
                   value={lead.name} 
                   onChange={(v) => setLead((s) => ({ ...s, name: v }))} 
                   required 
-                  placeholder="Ahmad Al-Safarini"
+                  placeholder="Enter your full name "
                 />
                 <Input 
-                  label="Business Email" 
+                  label="Email" 
                   type="email" 
                   value={lead.email} 
                   onChange={(v) => setLead((s) => ({ ...s, email: v }))} 
                   required 
-                  placeholder="ahmad@company.com"
+                  placeholder="Enter your email"
                 />
                 <Input 
                   label="Phone Number" 

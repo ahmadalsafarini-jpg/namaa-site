@@ -187,7 +187,7 @@ const Landing = ({ onLeadSubmit }) => {
                   value={lead.name} 
                   onChange={(v) => setLead((s) => ({ ...s, name: v }))} 
                   required 
-                  placeholder="Ahmad Al-Safarini"
+                  placeholder=" "
                 />
                 <Input 
                   label="Business Email" 
@@ -663,7 +663,6 @@ const Landing = ({ onLeadSubmit }) => {
 };
 
 export default Landing;
-
 
 
 

@@ -161,7 +161,7 @@ const Registration = ({ lead, onRegistered }) => {
                     value={form.name} 
                     onChange={(v) => setForm((s) => ({ ...s, name: v }))} 
                     required
-                    placeholder="Ahmad Al-Safarini"
+                    placeholder="Enter your full name"
                     className="h-12"
                   />
                 </div>
@@ -179,7 +179,7 @@ const Registration = ({ lead, onRegistered }) => {
                     value={form.email} 
                     onChange={(v) => setForm((s) => ({ ...s, email: v }))} 
                     required
-                    placeholder="ahmad@company.com"
+                    placeholder="Enter your email address"
                     className="h-12"
                   />
                 </div>

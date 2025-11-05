@@ -178,7 +178,7 @@ const SavingsCalculator = ({ monthlyKwh, facilityType = "Residential" }) => {
   }
 
   return (
-    <div className="rounded-2xl relative overflow-hidden bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-600 mt-6 shadow-xl border border-emerald-300/30">
+    <div className="rounded-2xl relative overflow-hidden bg-gradient-to-br from-emerald-400 via-blue-500 to-cyan-600 mt-6 shadow-xl border border-emerald-300/30">
       <div className="relative z-10 p-6">
         <div className="flex items-center gap-2 mb-4">
           <div className="h-10 w-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">

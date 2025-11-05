@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global zoom out by 20% */
+body {
+  zoom: 0.8;
+}
+
 /* Animated Gradient Blob Backgrounds */
 @keyframes blob {
   0% {
