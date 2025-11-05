@@ -23,16 +23,7 @@ const Landing = ({ onLeadSubmit }) => {
   };
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden">
-      {/* Dynamic Gradient Mesh Background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-emerald-50 via-blue-50 to-teal-50 -z-10"></div>
-      <div className="fixed inset-0 opacity-30 -z-10">
-        <div className="absolute top-0 -right-40 w-[600px] h-[600px] bg-gradient-to-br from-emerald-300 to-teal-300 rounded-full blur-3xl animate-blob"></div>
-        <div className="absolute top-0 -left-40 w-[600px] h-[600px] bg-gradient-to-br from-blue-300 to-cyan-300 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-gradient-to-br from-teal-300 to-emerald-300 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
-      </div>
-      
-      <div className="relative z-0">
+    <div className="min-h-screen w-full bg-white">
       {/* Enhanced HERO Section - Aurora Solar Inspired */}
       <div className="relative isolate overflow-hidden bg-gradient-to-br from-slate-900 via-emerald-900 to-slate-900">
         {/* Background Image with Overlay */}
@@ -147,7 +138,7 @@ const Landing = ({ onLeadSubmit }) => {
                     </div>
                     <div className="text-3xl sm:text-4xl font-bold text-white">
                       {stat.value}
-          </div>
+                    </div>
                   </div>
                   <div className="text-sm text-slate-400">{stat.label}</div>
                 </motion.div>
@@ -183,14 +174,14 @@ const Landing = ({ onLeadSubmit }) => {
             viewport={{ once: true }}
           >
             <Card className="max-w-4xl mx-auto shadow-2xl border-2 border-emerald-100">
-          <form
+              <form
                 className="grid grid-cols-1 gap-6 md:grid-cols-3"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (!canSubmit) return;
-              onLeadSubmit(lead);
-            }}
-          >
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!canSubmit) return;
+                  onLeadSubmit(lead);
+                }}
+              >
                 <Input 
                   label="Full Name" 
                   value={lead.name} 
@@ -227,9 +218,9 @@ const Landing = ({ onLeadSubmit }) => {
                     Create My Account
                     <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </button>
-            </div>
-          </form>
-        </Card>
+                </div>
+              </form>
+            </Card>
           </motion.div>
 
           {/* Trust Indicators */}
@@ -441,7 +432,7 @@ const Landing = ({ onLeadSubmit }) => {
                 <Card className="h-full hover:shadow-xl transition-all duration-300 group border-2 border-transparent hover:border-emerald-100">
                   <div className={`flex items-center justify-center h-16 w-16 rounded-2xl ${service.bgColor} mb-4 group-hover:scale-110 transition-transform duration-300`}>
                     <div className={service.color}>{service.icon}</div>
-            </div>
+                  </div>
                   <h3 className="text-xl font-bold text-slate-900 mb-3">{service.title}</h3>
                   <p className="text-slate-600 mb-6 leading-relaxed">{service.description}</p>
                   <ul className="space-y-2">
@@ -452,11 +443,11 @@ const Landing = ({ onLeadSubmit }) => {
                       </li>
                     ))}
                   </ul>
-          </Card>
+                </Card>
               </motion.div>
             ))}
           </motion.div>
-            </div>
+        </div>
       </section>
 
       {/* Why Choose Namaa */}
@@ -465,7 +456,7 @@ const Landing = ({ onLeadSubmit }) => {
           <motion.div {...fadeInUp} className="text-center mb-16">
             <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/20 backdrop-blur-sm px-4 py-2 text-sm font-medium text-emerald-300 border border-emerald-500/30 mb-4">
               Trusted Partner
-        </div>
+            </div>
             <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
               Why Choose Namaa Energy?
             </h2>
@@ -527,7 +518,7 @@ const Landing = ({ onLeadSubmit }) => {
           <motion.div {...fadeInUp} className="text-center mb-16">
             <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-2 text-sm font-medium text-emerald-700 mb-4">
               Strategic Network
-        </div>
+            </div>
             <h2 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-4">
               Potential Strategic Partners
             </h2>
@@ -563,8 +554,8 @@ const Landing = ({ onLeadSubmit }) => {
                   <div className="flex items-center justify-center gap-2 text-sm font-medium text-emerald-600">
                     <ShieldCheck className="h-4 w-4" />
                     <span>Verified Partner</span>
-              </div>
-            </Card>
+                  </div>
+                </Card>
               </motion.div>
             ))}
           </motion.div>
@@ -639,7 +630,7 @@ const Landing = ({ onLeadSubmit }) => {
               </div>
             </div>
             
-          <div>
+            <div>
               <h5 className="font-semibold mb-4">Contact Us</h5>
               <div className="grid gap-3 text-sm text-slate-400">
                 <div className="flex items-center gap-2">
@@ -659,7 +650,7 @@ const Landing = ({ onLeadSubmit }) => {
                   <span>Doha, Qatar</span>
                 </div>
               </div>
-          </div>
+            </div>
           </div>
           
           <div className="pt-8 border-t border-slate-800 text-center text-sm text-slate-400">
@@ -667,10 +658,12 @@ const Landing = ({ onLeadSubmit }) => {
           </div>
         </div>
       </footer>
-      </div>
     </div>
   );
 };
 
 export default Landing;
+
+
+
 

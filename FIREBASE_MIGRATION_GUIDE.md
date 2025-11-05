@@ -106,7 +106,7 @@ This method keeps the old project as a backup while using the new one for future
    - Save the file as `old-users-export.csv`
 
 2. **Using Firebase Admin SDK** (Recommended):
-   ```bash
+```bash
    # Create a script to export users
    # Save this as export-users.js
    ```
@@ -144,7 +144,7 @@ This method keeps the old project as a backup while using the new one for future
    - Upload `old-database-export.json`
 
 2. **Using Firebase CLI**:
-   ```bash
+```bash
    # Import database
    firebase database:set / --import-file old-database-export.json --project namaa-energy-new
    ```
@@ -157,15 +157,15 @@ This method keeps the old project as a backup while using the new one for future
    - Upload files manually
 
 2. **Using gsutil**:
-   ```bash
+```bash
    # Import storage files
    gsutil -m cp -r ./old-storage-backup/* gs://namaa-energy-new.appspot.com/
-   ```
+```
 
 #### Import Authentication Users
 
 1. **Using Firebase Admin SDK**:
-   ```bash
+```bash
    # Create a script to import users
    # Save this as import-users.js
    ```
@@ -198,7 +198,7 @@ This method keeps the old project as a backup while using the new one for future
 ### Phase 4: Update Your Application
 
 1. **Create `.env` file** (if not exists):
-   ```bash
+```bash
    # Copy the template
    cp env-template.txt .env
    ```
@@ -216,13 +216,13 @@ This method keeps the old project as a backup while using the new one for future
    ```
 
 3. **Update `.firebaserc`**:
-   ```json
-   {
+```json
+{
      "projects": {
        "default": "namaa-energy-new"
-     }
-   }
-   ```
+  }
+}
+```
 
 4. **Update `src/firebase/config.js`**:
    - Replace the hardcoded config with environment variables

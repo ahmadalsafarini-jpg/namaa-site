@@ -121,6 +121,7 @@ const AdminDashboard = ({ onLogout, onViewClient }) => {
 
   const getStatusColor = (status) => {
     const colors = {
+      "Overview": "bg-slate-100 text-slate-800",
       "Under Review": "bg-blue-100 text-blue-800",
       "Matched": "bg-purple-100 text-purple-800",
       "Approved": "bg-green-100 text-green-800",
@@ -214,6 +215,7 @@ const AdminDashboard = ({ onLogout, onViewClient }) => {
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   <option value="all">All Statuses</option>
+                  <option value="Overview">Overview</option>
                   <option value="Under Review">Under Review</option>
                   <option value="Matched">Matched</option>
                   <option value="Approved">Approved</option>
@@ -277,6 +279,7 @@ const AdminDashboard = ({ onLogout, onViewClient }) => {
                         onChange={(e) => handleStatusChange(app.id, e.target.value)}
                         className={`px-2 py-1 text-xs rounded-full border-0 ${getStatusColor(app.status)}`}
                       >
+                        <option value="Overview">Overview</option>
                         <option value="Under Review">Under Review</option>
                         <option value="Matched">Matched</option>
                         <option value="Approved">Approved</option>

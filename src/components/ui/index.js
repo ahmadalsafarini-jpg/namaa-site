@@ -6,3 +6,5 @@ export { Input, Select, TextArea } from './FormInputs';
 export { default as Progress } from './Progress';
 export { default as FilePicker } from './FilePicker';
 export { default as AnimatedGrid } from './AnimatedGrid';
+export { default as SavingsCalculator } from './SavingsCalculator';
+export { default as MapPicker } from './MapPicker';

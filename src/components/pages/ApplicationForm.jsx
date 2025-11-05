@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Upload } from "lucide-react";
-import { Card, PrimaryButton, GhostButton, Input, Select, TextArea, FilePicker } from "../ui";
+import { motion, AnimatePresence } from "framer-motion";
+import { Upload, Building, MapPin, Zap, FileText, Image, BarChart3, Check, AlertCircle, Loader, ArrowLeft, Sparkles, CheckCircle } from "lucide-react";
+import { Card, PrimaryButton, GhostButton, Input, Select, TextArea, FilePicker, MapPicker } from "../ui";
 import { formatDate } from "../../utils";
 import { createApplication, updateApplication, uploadMultipleFiles } from "../../firebase/realtime-db";
 import { COUNTRIES } from "../../constants";
@@ -10,6 +11,7 @@ const ApplicationForm = ({ onSubmit, onCancel, user }) => {
     projectName: "", 
     facilityType: "", 
     location: "", 
+    coordinates: null,
     loadProfile: "", 
     systemType: "", 
     notes: "" 
@@ -21,11 +23,10 @@ const ApplicationForm = ({ onSubmit, onCancel, user }) => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const can = f.projectName && f.facilityType && f.location && f.systemType;
-
+  
   // Function to upload files immediately when selected
   const uploadFilesImmediately = async (fileList, category) => {
     if (!fileList || fileList.length === 0) {
-      // Clear uploaded files if no files selected
       setUploadedFiles(prev => ({
         ...prev,
         [category]: []
@@ -33,7 +34,6 @@ const ApplicationForm = ({ onSubmit, onCancel, user }) => {
       return;
     }
     
-    // Find new files that haven't been uploaded yet
     const currentUploadedFiles = uploadedFiles[category] || [];
     const currentUploadedNames = currentUploadedFiles.map(f => f.fileName);
     const newFiles = fileList.filter(file => !currentUploadedNames.includes(file.name));
@@ -42,10 +42,8 @@ const ApplicationForm = ({ onSubmit, onCancel, user }) => {
       return;
     }
     
-    // Generate a temporary application ID for file organization
     const tempAppId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
-    // Mark new files as uploading
     setUploadingFiles(prev => ({
       ...prev,
       [category]: [...prev[category], ...newFiles]
@@ -55,7 +53,6 @@ const ApplicationForm = ({ onSubmit, onCancel, user }) => {
       const uploadResult = await uploadMultipleFiles(newFiles, user?.uid || "anonymous", tempAppId, category);
       
       if (uploadResult.success) {
-        // Add only new uploaded files to the uploadedFiles state
         setUploadedFiles(prev => ({
           ...prev,
           [category]: [...prev[category], ...uploadResult.files]
@@ -68,7 +65,6 @@ const ApplicationForm = ({ onSubmit, onCancel, user }) => {
       console.error(`Error uploading ${category} files:`, error);
       setError(`Error uploading ${category} files: ${error.message}`);
     } finally {
-      // Remove files from uploading state
       setUploadingFiles(prev => ({
         ...prev,
         [category]: prev[category].filter(file => !newFiles.includes(file))
@@ -76,9 +72,7 @@ const ApplicationForm = ({ onSubmit, onCancel, user }) => {
     }
   };
 
-  // Sync uploaded files with selected files when files change
   useEffect(() => {
-    // Clean up uploaded files that are no longer selected
     Object.keys(files).forEach(category => {
       const selectedFiles = files[category] || [];
       const selectedNames = selectedFiles.map(f => f.name);
@@ -92,16 +86,15 @@ const ApplicationForm = ({ onSubmit, onCancel, user }) => {
     });
   }, [files]);
 
-  // Clear success message after 5 seconds and reset form
   useEffect(() => {
     if (success) {
       const timer = setTimeout(() => {
         setSuccess(false);
-        // Reset form after success
         setF({ 
           projectName: "", 
           facilityType: "", 
           location: "", 
+          coordinates: null,
           loadProfile: "", 
           systemType: "", 
           notes: "" 
@@ -114,277 +107,479 @@ const ApplicationForm = ({ onSubmit, onCancel, user }) => {
     }
   }, [success]);
 
-  
-  return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
-      <div className="mb-4">
-        <h2 className="text-2xl font-semibold">Application Form</h2>
-      </div>
-      <Card>
-        <form className="grid grid-cols-1 gap-4 md:grid-cols-2" onSubmit={async (e) => {
+  const handleSubmit = async (e) => {
           e.preventDefault();
-          if (!can || loading || success) return;
-          
-          // Check if files are still uploading
-          const isUploading = Object.values(uploadingFiles).some(files => files.length > 0);
-          if (isUploading) {
-            setError("Please wait for file uploads to complete before submitting.");
-            return;
-          }
+    if (!can || loading || success) return;
+    
+    const isUploading = Object.values(uploadingFiles).some(files => files.length > 0);
+    if (isUploading) {
+      setError("Please wait for file uploads to complete before submitting.");
+      return;
+    }
           
           setLoading(true);
           setError("");
-          setSuccess(false);
+    setSuccess(false);
+    
+    const timeoutId = setTimeout(() => {
+      console.warn("Form submission timeout - forcing loading to false");
+      setLoading(false);
+    }, 30000);
+    
+    try {
+      const applicationData = { 
+        projectName: f.projectName,
+        facilityType: f.facilityType,
+        location: f.location,
+        coordinates: f.coordinates,
+        loadProfile: f.loadProfile,
+              systemType: f.systemType, 
+        notes: f.notes,
+        files: [],
+        userId: user?.uid || "anonymous",
+        userEmail: user?.email || "",
+        userName: user?.name || ""
+      };
+      
+      const applicationResult = await createApplication(applicationData);
+      
+      if (applicationResult.success) {
+        const organizedFiles = {
+          bills: uploadedFiles.bills.map(file => ({
+            name: file.fileName,
+            url: file.downloadURL,
+            size: file.size,
+            type: file.type,
+            path: file.filePath
+          })),
+          photos: uploadedFiles.photos.map(file => ({
+            name: file.fileName,
+            url: file.downloadURL,
+            size: file.size,
+            type: file.type,
+            path: file.filePath
+          })),
+          load: uploadedFiles.load.map(file => ({
+            name: file.fileName,
+            url: file.downloadURL,
+            size: file.size,
+            type: file.type,
+            path: file.filePath
+          }))
+        };
+        
+        const updateResult = await updateApplication(applicationResult.id, {
+          files: organizedFiles
+        });
+        
+        if (updateResult.success) {
+          setSuccess(true);
+          setLoading(false);
           
-          // Add a timeout to prevent infinite loading
-          const timeoutId = setTimeout(() => {
-            console.warn("Form submission timeout - forcing loading to false");
-            setLoading(false);
-          }, 30000); // 30 second timeout
-          
-          try {
-            // First, create the application to get an ID
-            const applicationData = { 
-              projectName: f.projectName,
-              facilityType: f.facilityType,
-              location: f.location,
-              loadProfile: f.loadProfile,
-              systemType: f.systemType,
-              notes: f.notes,
-              files: [], // Will be updated with file URLs after upload
-              userId: user?.uid || "anonymous",
-              userEmail: user?.email || "",
-              userName: user?.name || ""
-            };
-            
-            // Create application first to get an ID
-            const applicationResult = await createApplication(applicationData);
-            
-            if (applicationResult.success) {
-              // Use pre-uploaded files
-              const organizedFiles = {
-                bills: uploadedFiles.bills.map(file => ({
-                  name: file.fileName,
-                  url: file.downloadURL,
-                  size: file.size,
-                  type: file.type,
-                  path: file.filePath
-                })),
-                photos: uploadedFiles.photos.map(file => ({
-                  name: file.fileName,
-                  url: file.downloadURL,
-                  size: file.size,
-                  type: file.type,
-                  path: file.filePath
-                })),
-                load: uploadedFiles.load.map(file => ({
-                  name: file.fileName,
-                  url: file.downloadURL,
-                  size: file.size,
-                  type: file.type,
-                  path: file.filePath
-                }))
-              };
-              
-              // Update application with file URLs
-              const updatedApplicationData = {
-                ...applicationData,
-                files: organizedFiles
-              };
-              
-              // Update the application with file information
-              const updateResult = await updateApplication(applicationResult.id, {
-                files: organizedFiles
+          setTimeout(() => {
+              onSubmit({ 
+              id: applicationResult.id,
+              ...applicationData,
+              files: organizedFiles
               });
-              
-              if (updateResult.success) {
-                // Show success message
-                setSuccess(true);
-                
-                // Set loading to false before navigation
-                setLoading(false);
-                
-                // Add a small delay to ensure UI updates before navigation
-                setTimeout(() => {
-                  // Call the original onSubmit with application data
-                  onSubmit({ 
-                    id: applicationResult.id,
-                    ...applicationData,
-                    files: organizedFiles
-                  });
-                }, 100);
-              } else {
-                setError(`Failed to update application with files: ${updateResult.error}`);
-                setLoading(false);
-              }
+          }, 100);
+        } else {
+          setError(`Failed to update application with files: ${updateResult.error}`);
+          setLoading(false);
+        }
             } else {
-              setError(`Failed to save application: ${applicationResult.error}`);
-              setLoading(false);
+        setError(`Failed to save application: ${applicationResult.error}`);
+        setLoading(false);
             }
           } catch (err) {
-            console.error("Form submission error:", err);
+      console.error("Form submission error:", err);
             setError("An unexpected error occurred. Please try again.");
           } finally {
-            clearTimeout(timeoutId);
+      clearTimeout(timeoutId);
             setLoading(false);
           }
-        }}>
+  };
+
+  const FileUploadSection = ({ category, icon: Icon, label, hint }) => {
+    const isUploading = uploadingFiles[category].length > 0;
+    const uploadCount = uploadedFiles[category].length;
+    
+    return (
+      <div className="relative">
+        <label className="block text-sm font-medium text-slate-700 mb-3">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+              <Icon className="h-4 w-4 text-emerald-600" />
+            </div>
+            <span>{label}</span>
+            {hint && <span className="text-slate-500 text-xs">({hint})</span>}
+          </div>
+        </label>
+        
+        <FilePicker 
+          id={category}
+          caption={uploadCount > 0 ? `${uploadCount} file(s) selected` : "Choose files"}
+          count={files[category].length} 
+          onChange={(list) => {
+            setFiles((s) => ({ ...s, [category]: list }));
+            uploadFilesImmediately(list, category);
+          }} 
+        />
+        
+        <AnimatePresence>
+          {isUploading && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="flex items-center gap-2 mt-2 text-xs text-blue-600 bg-blue-50 px-3 py-2 rounded-lg border border-blue-200"
+            >
+              <Loader className="h-3 w-3 animate-spin" />
+              Uploading {uploadingFiles[category].length} file(s)...
+            </motion.div>
+          )}
+          
+          {!isUploading && uploadCount > 0 && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="flex items-center gap-2 mt-2 text-xs text-emerald-600 bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-200"
+            >
+              <CheckCircle className="h-3 w-3" />
+              {uploadCount} file(s) uploaded successfully
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Dynamic Gradient Mesh Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50"></div>
+      <div className="absolute inset-0 opacity-40">
+        <div className="absolute top-0 -right-40 w-96 h-96 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full blur-3xl animate-blob"></div>
+        <div className="absolute top-0 -left-40 w-96 h-96 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-40 left-1/2 w-96 h-96 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+      </div>
+      
+      <div className="relative z-10 mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-12">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mb-8"
+        >
+          <button
+            onClick={onCancel}
+            className="inline-flex items-center gap-2 text-slate-600 hover:text-emerald-600 mb-4 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Dashboard
+          </button>
+          
+          <div className="flex items-center gap-4">
+            <div className="h-14 w-14 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg">
+              <FileText className="h-7 w-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900">
+                New Solar Application
+              </h1>
+              <p className="mt-1 text-slate-600">
+                Complete the form below to start your solar journey
+              </p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Success Message */}
+        <AnimatePresence>
           {success && (
-            <div className="md:col-span-2 rounded-xl bg-green-50 p-4 text-sm text-green-800 border border-green-200">
-              <div className="flex items-center gap-2">
-                <svg className="h-5 w-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span className="font-medium">Application submitted successfully!</span>
-              </div>
-              <p className="mt-1">Your application has been saved and a ticket has been created for tracking.</p>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="mb-6"
+            >
+              <Card className="bg-emerald-50 border-2 border-emerald-200">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 h-12 w-12 bg-emerald-500 rounded-xl flex items-center justify-center">
+                    <Check className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-emerald-900">Application Submitted Successfully!</h3>
+                    <p className="text-sm text-emerald-700 mt-1">
+                      Your application has been saved and a ticket has been created for tracking. You'll be redirected to your dashboard shortly.
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
           )}
-          
-          
+        </AnimatePresence>
+
+        {/* Error Message */}
+        <AnimatePresence>
           {error && (
-            <div className="md:col-span-2 rounded-xl bg-red-50 p-4 text-sm text-red-800 border border-red-200">
-              <div className="flex items-center gap-2">
-                <svg className="h-5 w-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-                <span className="font-medium">Submission failed</span>
-              </div>
-              <p className="mt-1">{error}</p>
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="mb-6"
+            >
+              <Card className="bg-red-50 border-2 border-red-200">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 h-12 w-12 bg-red-500 rounded-xl flex items-center justify-center">
+                    <AlertCircle className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-red-900">Submission Failed</h3>
+                    <p className="text-sm text-red-700 mt-1">{error}</p>
+                  </div>
             </div>
+              </Card>
+            </motion.div>
           )}
-          <Input label="Project name" value={f.projectName} onChange={(v) => setF((s) => ({ ...s, projectName: v }))} required />
-          <Select 
-            label="Facility type" 
-            value={f.facilityType} 
-            onChange={(v) => setF((s) => ({ ...s, facilityType: v }))} 
-            required 
-            options={["Residential","Commercial", "Industrial", "Educational", "Healthcare", "Agricultural"]} 
-          />
-          <Select 
-            label="Location" 
-            value={f.location} 
-            onChange={(v) => setF((s) => ({ ...s, location: v }))} 
-            required 
-            options={COUNTRIES} 
-          />
+        </AnimatePresence>
+
+        {/* Main Form */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+        >
+          <Card className="p-8 shadow-2xl border-2 border-slate-100">
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* Section 1: Project Details */}
+              <div>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="h-10 w-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <Building className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-900">Project Details</h2>
+                    <p className="text-sm text-slate-600">Tell us about your facility</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-emerald-500" />
+                        Project Name *
+                      </div>
+                    </label>
+                    <Input 
+                      value={f.projectName} 
+                      onChange={(v) => setF((s) => ({ ...s, projectName: v }))} 
+                      required
+                      placeholder="e.g., Al Wakrah Manufacturing Plant"
+                      className="h-12"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <div className="flex items-center gap-2">
+                        <Building className="h-4 w-4 text-emerald-500" />
+                        Facility Type *
+                      </div>
+                    </label>
+                    <Select 
+                      value={f.facilityType} 
+                      onChange={(v) => setF((s) => ({ ...s, facilityType: v }))} 
+                      required 
+                      options={["Villa (Residential)", "Flat (Residential)", "Commercial", "Industrial (Subsidized)", "Bulk Industrial", "Hotel", "Government", "Educational", "Healthcare", "Productive Farms", "EZAB (Livestock)", "Water Tanker"]}
+                      className="h-12"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-emerald-500" />
+                        Pin Your Location on Map *
+                      </div>
+                    </label>
+                    <MapPicker
+                      value={f.coordinates}
+                      onChange={(coords) => setF((s) => ({ 
+                        ...s, 
+                        coordinates: coords,
+                        location: `${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`
+                      }))}
+                      apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <div className="flex items-center gap-2">
+                        <BarChart3 className="h-4 w-4 text-emerald-500" />
+                        Load Profile (kWh/month)
+                      </div>
+                    </label>
           <Input 
-            label="Load profile (kWh/month)" 
             value={f.loadProfile} 
             onChange={(v) => setF((s) => ({ ...s, loadProfile: v }))} 
             placeholder="e.g., 120,000" 
-          />
+                      className="h-12"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <div className="flex items-center gap-2">
+                        <Zap className="h-4 w-4 text-emerald-500" />
+                        System Type *
+                      </div>
+                    </label>
           <Select 
-            label="System type" 
             value={f.systemType} 
             onChange={(v) => setF((s) => ({ ...s, systemType: v }))} 
             required 
             options={["On-grid", "Off-grid", "Hybrid"]} 
-          />
+                      className="h-12"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-emerald-500" />
+                        Additional Notes
+                      </div>
+                    </label>
           <TextArea 
-            label="Notes" 
             value={f.notes} 
             onChange={(v) => setF((s) => ({ ...s, notes: v }))} 
-            placeholder="Any specifics we should know?" 
-          />
+                      placeholder="Any specific requirements or details we should know about your project..."
+                      rows={4}
+                    />
+                  </div>
+                </div>
+              </div>
 
-          <div className="md:col-span-2 grid gap-4">
-            <div className="grid gap-2">
-              <span className="text-sm text-slate-600">Upload energy bills</span>
-              <FilePicker 
-                id="bills" 
-                caption="Choose files" 
-                hint={null} 
-                count={files.bills.length} 
-                onChange={(list) => {
-                  setFiles((s) => ({ ...s, bills: list }));
-                  // Upload files immediately
-                  uploadFilesImmediately(list, 'bills');
-                }} 
+              {/* Divider */}
+              <div className="border-t-2 border-slate-100"></div>
+
+              {/* Section 2: Document Upload */}
+              <div>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="h-10 w-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <Upload className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-900">Upload Documents</h2>
+                    <p className="text-sm text-slate-600">Attach relevant files to support your application</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <FileUploadSection 
+                    category="bills"
+                    icon={FileText}
+                    label="Energy Bills"
+                    hint="Last 12 months"
+                  />
+                  
+                  <FileUploadSection 
+                    category="photos"
+                    icon={Image}
+                    label="Site Photos"
+                    hint="Facility images"
+                  />
+                  
+                  <FileUploadSection 
+                    category="load"
+                    icon={BarChart3}
+                    label="Load Data"
+                    hint="Optional"
               />
-              {uploadingFiles.bills.length > 0 && (
-                <div className="text-xs text-blue-600">
-                  Uploading {uploadingFiles.bills.length} file(s)...
-                </div>
-              )}
-              {uploadedFiles.bills.length > 0 && (
-                <div className="text-xs text-green-600">
-                  ✓ {uploadedFiles.bills.length} file(s) uploaded successfully
-                </div>
-              )}
-            </div>
-            <div className="grid gap-2">
-              <span className="text-sm text-slate-600">Upload site photos</span>
-              <FilePicker 
-                id="photos" 
-                caption="Choose files" 
-                count={files.photos.length} 
-                onChange={(list) => {
-                  setFiles((s) => ({ ...s, photos: list }));
-                  // Upload files immediately
-                  uploadFilesImmediately(list, 'photos');
-                }} 
-              />
-              {uploadingFiles.photos.length > 0 && (
-                <div className="text-xs text-blue-600">
-                  Uploading {uploadingFiles.photos.length} file(s)...
-                </div>
-              )}
-              {uploadedFiles.photos.length > 0 && (
-                <div className="text-xs text-green-600">
-                  ✓ {uploadedFiles.photos.length} file(s) uploaded successfully
-                </div>
-              )}
-            </div>
-            <div className="grid gap-2">
-              <span className="text-sm text-slate-600">Upload load data</span>
-              <FilePicker 
-                id="load" 
-                caption="Choose files" 
-                count={files.load.length} 
-                onChange={(list) => {
-                  setFiles((s) => ({ ...s, load: list }));
-                  // Upload files immediately
-                  uploadFilesImmediately(list, 'load');
-                }} 
-              />
-              {uploadingFiles.load.length > 0 && (
-                <div className="text-xs text-blue-600">
-                  Uploading {uploadingFiles.load.length} file(s)...
-                </div>
-              )}
-              {uploadedFiles.load.length > 0 && (
-                <div className="text-xs text-green-600">
-                  ✓ {uploadedFiles.load.length} file(s) uploaded successfully
-                </div>
-              )}
             </div>
           </div>
 
-          <div className="md:col-span-2 flex items-center gap-3 pt-2">
-            <PrimaryButton type="submit" disabled={loading || success || Object.values(uploadingFiles).some(files => files.length > 0)}>
-              <Upload className="h-4 w-4" /> 
-              {Object.values(uploadingFiles).some(files => files.length > 0) 
-                ? "Uploading Files... Please Wait" 
-                : loading 
-                  ? "Submitting..." 
-                  : success 
-                    ? "Submitted Successfully!" 
-                    : "Submit Application"
-              }
-            </PrimaryButton>
-            <GhostButton onClick={onCancel}>Cancel</GhostButton>
-            <span className="text-sm text-slate-500">
-              {Object.values(uploadingFiles).some(files => files.length > 0) 
-                ? "Please wait for all files to upload before submitting." 
-                : success 
-                  ? "Form will reset automatically" 
-                  : "A ticket will be auto-generated."
-              }
-            </span>
+              {/* Divider */}
+              <div className="border-t-2 border-slate-100"></div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4">
+                <div className="text-sm text-slate-600">
+                  {Object.values(uploadingFiles).some(files => files.length > 0) ? (
+                    <span className="flex items-center gap-2 text-blue-600">
+                      <Loader className="h-4 w-4 animate-spin" />
+                      Please wait for all files to upload...
+                    </span>
+                  ) : success ? (
+                    <span className="flex items-center gap-2 text-emerald-600">
+                      <Check className="h-4 w-4" />
+                      Form will reset automatically
+                    </span>
+                  ) : (
+                    <span>* Required fields</span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={onCancel}
+                    className="px-6 py-3 border-2 border-slate-200 text-slate-700 rounded-xl font-medium hover:border-emerald-300 hover:bg-emerald-50 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  
+                  <button
+                    type="submit"
+                    disabled={loading || success || !can || Object.values(uploadingFiles).some(files => files.length > 0)}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-blue-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader className="h-5 w-5 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : success ? (
+                      <>
+                        <Check className="h-5 w-5" />
+                        Submitted Successfully!
+                      </>
+                    ) : Object.values(uploadingFiles).some(files => files.length > 0) ? (
+                      <>
+                        <Loader className="h-5 w-5 animate-spin" />
+                        Uploading Files...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-5 w-5" />
+                        Submit Application
+                      </>
+                    )}
+                  </button>
+                </div>
           </div>
         </form>
       </Card>
+        </motion.div>
+
+        {/* Info Footer */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.6 }}
+          className="mt-8 text-center text-sm text-slate-600"
+        >
+          <p>
+            Upon submission, a tracking ticket will be automatically generated. 
+            You'll receive updates on your application status via email.
+          </p>
+        </motion.div>
+      </div>
     </div>
   );
 };
