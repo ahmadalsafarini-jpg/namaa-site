@@ -74,7 +74,7 @@ const Landing = ({ onLeadSubmit }) => {
           </svg>
         </div>
 
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-20 pb-24 sm:pt-28 sm:pb-32">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-12 pb-16 sm:pt-16 sm:pb-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -113,7 +113,7 @@ const Landing = ({ onLeadSubmit }) => {
               transition={{ delay: 0.4, duration: 0.8 }}
               className="mx-auto max-w-3xl text-xl text-slate-300 mb-10 leading-relaxed"
             >
-              Connect with vetted solar companies, secure institutional financing, and track your clean energy impact - all through one intelligent platform.
+              Namaa is a smart platform that accelerates green energy adoption. With just a few clicks, it simulates the ideal solar design for your facility, matches you with trusted suppliers at competitive prices, and streamlines the entire workflow all from your couch.
             </motion.p>
 
             {/* CTA Buttons */}
@@ -144,8 +144,12 @@ const Landing = ({ onLeadSubmit }) => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6, duration: 0.8 }}
-              className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto"
+              className="max-w-5xl mx-auto"
             >
+              <p className="text-sm text-slate-300 text-center mb-4">
+              Namaa suppliers Portfolio
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {[
                 { value: "500+", label: "MW Capacity", icon: <Zap className="h-5 w-5" /> },
                 { value: "50+", label: "Projects Delivered", icon: <Building2 className="h-5 w-5" /> },
@@ -170,15 +174,9 @@ const Landing = ({ onLeadSubmit }) => {
                   <div className="text-sm text-slate-400">{stat.label}</div>
                 </motion.div>
               ))}
+              </div>
             </motion.div>
           </motion.div>
-        </div>
-        
-        {/* Bottom Wave Divider */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg className="w-full h-16 text-white" preserveAspectRatio="none" viewBox="0 0 1200 120">
-            <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" fill="currentColor"></path>
-          </svg>
         </div>
       </div>
 
@@ -540,7 +538,7 @@ const Landing = ({ onLeadSubmit }) => {
       </section>
 
       {/* Partners Section */}
-      <section id="partners" className="relative py-24 bg-white">
+      <section id="partners" className="hidden relative py-24 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <motion.div {...fadeInUp} className="text-center mb-16">
             <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-2 text-sm font-medium text-emerald-700 mb-4">
