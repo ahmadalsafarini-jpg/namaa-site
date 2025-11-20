@@ -151,8 +151,8 @@ const Landing = ({ onLeadSubmit }) => {
               </p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {[
-                { value: "500+", label: "MW Capacity", icon: <Zap className="h-5 w-5" /> },
-                { value: "50+", label: "Projects Delivered", icon: <Building2 className="h-5 w-5" /> },
+                { value: "20+", label: "MW Capacity", icon: <Zap className="h-5 w-5" /> },
+                { value: "150+", label: "Projects Delivered", icon: <Building2 className="h-5 w-5" /> },
                 { value: "24hrs", label: "Average Match Time", icon: <Clock className="h-5 w-5" /> },
                 { value: "QFC", label: "Regulated Entity", icon: <ShieldCheck className="h-5 w-5" /> }
               ].map((stat, index) => (
