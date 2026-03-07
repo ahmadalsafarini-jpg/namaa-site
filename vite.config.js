@@ -1,22 +1,24 @@
-import path from 'path'
-import { fileURLToPath } from 'url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import legacy from '@vitejs/plugin-legacy'
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
+import { createHtmlPlugin } from 'vite-plugin-html'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
-    legacy({
-      targets: ['defaults', 'not IE 11'],
-      additionalLegacyPolyfills: ['regenerator-runtime/runtime'],
+    createHtmlPlugin({
+      minify: false,
+      inject: {
+        data: {
+          title: 'Namaa Energy | Solar Project Marketplace — Qatar & GCC',
+          description: "Qatar's AI-powered solar marketplace. Get an instant bankable feasibility report in 60 seconds. Connecting facility owners, solar EPCs, and green finance across the GCC.",
+          ogImage: 'https://www.namaaenergy.com/og-image.png',
+          ogUrl: 'https://www.namaaenergy.com',
+        },
+      },
     }),
   ],
   build: {
-    target: 'es2015',
     rollupOptions: {
       output: {
         manualChunks: undefined,
