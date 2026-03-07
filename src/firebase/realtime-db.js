@@ -6,7 +6,6 @@ import {
   update, 
   remove, 
   onValue, 
-  off,
   query,
   orderByChild,
   equalTo,
@@ -183,6 +182,13 @@ export const deleteApplication = async (applicationId) => {
 
 // Real-time listeners
 export const subscribeToUserApplications = (userId, callback) => {
+  if (!userId) {
+    console.warn('subscribeToUserApplications: userId is required');
+    callback([]);
+    return () => {}; // Return empty unsubscribe function
+  }
+  
+  console.log('🔍 subscribeToUserApplications: Setting up listener for userId:', userId);
   const applicationsRef = ref(database, COLLECTIONS.APPLICATIONS);
   const userApplicationsQuery = query(
     applicationsRef,
@@ -191,25 +197,39 @@ export const subscribeToUserApplications = (userId, callback) => {
   );
   
   const unsubscribe = onValue(userApplicationsQuery, (snapshot) => {
+    console.log('📊 subscribeToUserApplications: Snapshot received, exists:', snapshot.exists());
     if (snapshot.exists()) {
       const applications = [];
       snapshot.forEach((childSnapshot) => {
-        applications.push({
+        const appData = {
           id: childSnapshot.key,
           ...childSnapshot.val()
-        });
+        };
+        console.log('📄 Found application:', appData.id, appData.projectName);
+        applications.push(appData);
       });
       
       // Sort by creation date (newest first)
-      applications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      applications.sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+        const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+        return dateB - dateA;
+      });
       
+      console.log('✅ subscribeToUserApplications: Returning', applications.length, 'applications');
       callback(applications);
     } else {
+      console.log('ℹ️ subscribeToUserApplications: No applications found for user');
       callback([]);
     }
+  }, (error) => {
+    console.error('❌ Error in subscribeToUserApplications:', error);
+    console.error('Error code:', error.code);
+    console.error('Error message:', error.message);
+    callback([]);
   });
   
-  return () => off(userApplicationsQuery, 'value', unsubscribe);
+  return unsubscribe;
 };
 
 export const subscribeToAllApplications = (callback) => {
@@ -219,7 +239,7 @@ export const subscribeToAllApplications = (callback) => {
     orderByKey(),
     limitToLast(50)
   );
-  
+
   const unsubscribe = onValue(recentApplicationsQuery, (snapshot) => {
     if (snapshot.exists()) {
       const applications = [];
@@ -229,17 +249,17 @@ export const subscribeToAllApplications = (callback) => {
           ...childSnapshot.val()
         });
       });
-      
-      // Sort by creation date (newest first)
       applications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      
       callback(applications);
     } else {
       callback([]);
     }
+  }, (error) => {
+    console.error('subscribeToAllApplications error:', error?.code || error?.message || error);
+    callback([]);
   });
-  
-  return () => off(recentApplicationsQuery, 'value', unsubscribe);
+
+  return unsubscribe;
 };
 
 // File upload functions
@@ -555,12 +575,10 @@ export const getCompanyAssignedClients = async (companyId) => {
 export const subscribeToCompanyClients = (companyId, callback) => {
   const companyRef = ref(database, `${COLLECTIONS.ENERGY_COMPANIES}/${companyId}`);
   
-  const listener = onValue(companyRef, async (snapshot) => {
+  const unsubscribe = onValue(companyRef, async (snapshot) => {
     if (snapshot.exists()) {
       const company = snapshot.val();
       const assignedClientIds = company.assignedClients || [];
-      
-      // Fetch all assigned applications
       const applications = [];
       for (const appId of assignedClientIds) {
         const appRef = ref(database, `${COLLECTIONS.APPLICATIONS}/${appId}`);
@@ -572,7 +590,6 @@ export const subscribeToCompanyClients = (companyId, callback) => {
           });
         }
       }
-      
       callback(applications);
     } else {
       callback([]);
@@ -581,8 +598,7 @@ export const subscribeToCompanyClients = (companyId, callback) => {
     console.error('Error subscribing to company clients:', error);
     callback([]);
   });
-  
-  // Return unsubscribe function
-  return () => off(companyRef, 'value', listener);
+
+  return unsubscribe;
 };
 

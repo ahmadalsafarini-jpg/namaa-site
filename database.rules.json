@@ -1,0 +1,28 @@
+{
+  "rules": {
+    "applications": {
+      "$applicationId": {
+        ".read": "auth != null && (data.child('userId').val() == auth.uid || root.child('users').child(auth.uid).child('role').val() == 'admin')",
+        ".write": "auth != null && (data.child('userId').val() == auth.uid || root.child('users').child(auth.uid).child('role').val() == 'admin' || !data.exists())"
+      },
+      ".read": "auth != null",
+      ".write": "auth != null && (!data.exists() || data.child('userId').val() == auth.uid)"
+    },
+    "tickets": {
+      "$ticketId": {
+        ".read": "auth != null && (data.child('userId').val() == auth.uid || root.child('users').child(auth.uid).child('role').val() == 'admin')",
+        ".write": "auth != null && (data.child('userId').val() == auth.uid || root.child('users').child(auth.uid).child('role').val() == 'admin' || !data.exists())"
+      }
+    },
+    "users": {
+      "$userId": {
+        ".read": "auth != null && (auth.uid == $userId || root.child('users').child(auth.uid).child('role').val() == 'admin')",
+        ".write": "auth != null && (auth.uid == $userId || root.child('users').child(auth.uid).child('role').val() == 'admin')"
+      }
+    },
+    "energyCompanies": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}

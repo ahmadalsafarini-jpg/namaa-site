@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { motion, AnimatePresence } from "framer-motion";
 import TopNav from "./components/layout/TopNav";
 import {
@@ -22,6 +23,24 @@ import { nextStatus, progressForStatus } from "./utils";
 import { onAuthStateChange, getCurrentUser, signOutUser } from "./firebase/auth";
 import { getUserApplications, subscribeToUserApplications, updateApplication, loginEnergyCompany } from "./firebase/realtime-db";
 
+// SEO: title and meta description per route
+const ROUTE_META = {
+  landing: { title: "Namaa Energy | Solar Solutions in Qatar", description: "Namaa Energy provides solar energy solutions and sustainable power for homes and businesses in Qatar." },
+  login: { title: "Sign In | Namaa Energy", description: "Sign in to your Namaa Energy account." },
+  register: { title: "Register | Namaa Energy", description: "Create your Namaa Energy account." },
+  dashboard: { title: "Dashboard | Namaa Energy", description: "Manage your projects and applications." },
+  application: { title: "New Application | Namaa Energy", description: "Submit a new solar project application." },
+  ticket: { title: "Project Status | Namaa Energy", description: "Track your project progress and offers." },
+  notifications: { title: "Notifications | Namaa Energy", description: "Your notifications." },
+  help: { title: "Help | Namaa Energy", description: "Get help and contact support." },
+  profile: { title: "Profile | Namaa Energy", description: "Manage your profile and settings." },
+  "admin-login": { title: "Admin Login | Namaa Energy", description: "Administrator sign in." },
+  "admin-dashboard": { title: "Admin Dashboard | Namaa Energy", description: "Manage applications and energy companies." },
+  "admin-client": { title: "Client Detail | Namaa Energy", description: "View and manage client application." },
+  "energy-company-login": { title: "Energy Company Portal | Namaa Energy", description: "Sign in to the energy company portal." },
+  "energy-company-dashboard": { title: "Dashboard | Namaa Energy", description: "Energy company assigned clients." },
+  "energy-company-client": { title: "Client Detail | Namaa Energy", description: "View and manage assigned client." },
+};
 
 /******************** Root App ********************/
 export default function NamaaPrototype() {
@@ -92,16 +111,47 @@ export default function NamaaPrototype() {
         // Load user's applications from Realtime Database
         loadUserApplications(userData.uid);
       } else {
-        // User is signed out
+        // User is signed out — preserve admin/energy-company route
         setUser(null);
         setApplications([]);
         setActiveApplicationId(null);
-        setRoute("landing");
+        setRoute((prev) =>
+          prev.startsWith("admin-") || prev.startsWith("energy-company-") ? prev : "landing"
+        );
       }
       setLoading(false);
     });
 
     return () => unsubscribe();
+  }, []);
+
+  // Restore admin/energy-company session on load when URL hash indicates those routes
+  useEffect(() => {
+    const hash = (window.location.hash || "").slice(1);
+    if (hash.startsWith("admin-")) {
+      if (sessionStorage.getItem("adminSession")) {
+        setIsAdmin(true);
+        if (hash === "admin-login" || hash === "admin-client") {
+          setRoute("admin-dashboard");
+          window.history.replaceState({ route: "admin-dashboard" }, "", "#admin-dashboard");
+        }
+      } else if (hash === "admin-dashboard" || hash === "admin-client") {
+        setRoute("admin-login");
+        window.history.replaceState({ route: "admin-login" }, "", "#admin-login");
+      }
+    } else if (hash.startsWith("energy-company-")) {
+      try {
+        const stored = sessionStorage.getItem("energyCompanySession");
+        if (stored) {
+          setEnergyCompany(JSON.parse(stored));
+        } else if (hash === "energy-company-dashboard" || hash === "energy-company-client") {
+          setRoute("energy-company-login");
+          window.history.replaceState({ route: "energy-company-login" }, "", "#energy-company-login");
+        }
+      } catch (_) {
+        sessionStorage.removeItem("energyCompanySession");
+      }
+    }
   }, []);
 
   // Ensure activeApplication is set when needed
@@ -261,14 +311,16 @@ export default function NamaaPrototype() {
 
   // Admin handlers
   const handleAdminLogin = () => {
+    sessionStorage.setItem("adminSession", "1");
     setIsAdmin(true);
-    setRoute("admin-dashboard");
+    goto("admin-dashboard");
   };
 
   const handleAdminLogout = () => {
+    sessionStorage.removeItem("adminSession");
     setIsAdmin(false);
     setSelectedClient(null);
-    setRoute("landing");
+    goto("landing");
   };
 
   const handleViewClient = (client) => {
@@ -288,17 +340,19 @@ export default function NamaaPrototype() {
   const handleEnergyCompanyLogin = async (username, password) => {
     const result = await loginEnergyCompany(username, password);
     if (result.success) {
+      sessionStorage.setItem("energyCompanySession", JSON.stringify(result.data));
       setEnergyCompany(result.data);
-      setRoute("energy-company-dashboard");
+      goto("energy-company-dashboard");
     } else {
       throw new Error(result.error);
     }
   };
 
   const handleEnergyCompanyLogout = () => {
+    sessionStorage.removeItem("energyCompanySession");
     setEnergyCompany(null);
     setSelectedCompanyClient(null);
-    setRoute("landing");
+    goto("landing");
   };
 
   const handleViewCompanyClient = (client) => {
@@ -317,8 +371,14 @@ export default function NamaaPrototype() {
     );
   }
 
+  const meta = ROUTE_META[route] || ROUTE_META.landing;
+
   return (
     <div className="min-h-screen bg-slate-50">
+      <Helmet>
+        <title>{meta.title}</title>
+        <meta name="description" content={meta.description} />
+      </Helmet>
       {!route.startsWith('admin-') && !route.startsWith('energy-company-') && <TopNav onNavigate={goto} route={route} user={user} onLogout={handleLogout} />}
 
       <AnimatePresence mode="wait">

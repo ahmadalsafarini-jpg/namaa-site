@@ -10,14 +10,25 @@ const Dashboard = ({ user, applications, onOpen, onApplicationClick }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user?.uid) return;
+    if (!user?.uid) {
+      console.log('Dashboard: No user UID available');
+      setLoading(false);
+      return;
+    }
+
+    console.log('Dashboard: Subscribing to applications for user:', user.uid);
+    setLoading(true);
 
     const unsubscribe = subscribeToUserApplications(user.uid, (apps) => {
+      console.log('Dashboard: Received applications:', apps?.length || 0, apps);
       setFirestoreApplications(apps || []);
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      console.log('Dashboard: Unsubscribing from applications');
+      unsubscribe();
+    };
   }, [user?.uid]);
 
   const displayApplications = firestoreApplications.length > 0 ? firestoreApplications : applications;
