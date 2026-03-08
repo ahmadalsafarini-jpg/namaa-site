@@ -53,10 +53,14 @@ const EnergyCompanyClientDetail = ({ client, company, onBack }) => {
       const result = await uploadFile(file, editedClient.userId, editedClient.id, category);
 
       if (result.success) {
-        // Update local state with new file
         const updatedFiles = {
           ...editedClient.files,
-          [category]: [...(editedClient.files?.[category] || []), result.data]
+          [category]: [...(editedClient.files?.[category] || []), {
+            name: result.fileName,
+            url: result.downloadURL,
+            size: result.size,
+            type: result.type
+          }]
         };
 
         await updateApplication(editedClient.id, { files: updatedFiles });

@@ -4,7 +4,7 @@ import { Loader2, CalendarDays, MapPin, Building, Zap, Upload, Plus, Minus, Bank
 import { Card, PrimaryButton, GhostButton, Pill, Progress, Select, TextArea, SavingsCalculator } from "../ui";
 import { STATUS_FLOW } from "../../constants";
 import { progressForStatus, formatDate } from "../../utils";
-import { getUserApplications, subscribeToUserApplications, deleteApplication } from "../../firebase/realtime-db";
+import { subscribeToUserApplications, deleteApplication } from "../../firebase/realtime-db";
 
 // Generate offers based on application data
 const generateOffers = (application) => {
@@ -108,7 +108,7 @@ const generateOffers = (application) => {
   });
 };
 
-const TicketStatus = ({ user, onAdvance, onGoMatching, onGoProject, onGoFinancing, onNewApplication, loading = false, selectedApplicationId = null, onSelectApplication }) => {
+const TicketStatus = ({ user, onAdvance, onGoProject, onNewApplication, loading = false, selectedApplicationId = null, onSelectApplication }) => {
   const [applications, setApplications] = useState([]);
   const [applicationsLoading, setApplicationsLoading] = useState(true);
   const [selectedApplication, setSelectedApplication] = useState(null);
@@ -127,7 +127,6 @@ const TicketStatus = ({ user, onAdvance, onGoMatching, onGoProject, onGoFinancin
     setApplicationsLoading(true);
     
     const unsubscribe = subscribeToUserApplications(user.uid, (apps) => {
-      console.log('📊 Apps updated:', apps?.length, 'apps, selectedApplicationId:', selectedApplicationId);
       setApplications(apps || []);
       setApplicationsLoading(false);
       
@@ -135,16 +134,13 @@ const TicketStatus = ({ user, onAdvance, onGoMatching, onGoProject, onGoFinancin
         if (selectedApplicationId) {
           const foundApp = apps.find(app => app.id === selectedApplicationId);
           if (foundApp) {
-            console.log('✅ Setting selected app to:', foundApp.projectName);
             setSelectedApplication(foundApp);
             onSelectApplication && onSelectApplication(foundApp.id);
           } else {
-            console.log('❌ SelectedApplicationId not found, falling back to first app');
             setSelectedApplication(apps[0]);
             onSelectApplication && onSelectApplication(apps[0].id);
           }
         } else {
-          console.log('⚠️ No selectedApplicationId, setting to first app');
           setSelectedApplication(apps[0]);
           onSelectApplication && onSelectApplication(apps[0].id);
         }

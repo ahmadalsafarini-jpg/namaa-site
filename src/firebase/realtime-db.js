@@ -37,18 +37,19 @@ const sendEmailNotification = async (applicationData) => {
       body: JSON.stringify(applicationData)
     });
 
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
     const result = await response.json();
     
-    if (result.success) {
-      console.log('✅ Email notification sent successfully');
-    } else {
-      console.warn('⚠️ Failed to send email notification:', result.error);
+    if (!result.success) {
+      console.warn('Failed to send email notification:', result.error);
     }
     
     return result;
   } catch (error) {
-    console.error('❌ Error sending email notification:', error);
-    // Don't throw error - email notification should not block application creation
+    console.error('Error sending email notification:', error);
     return { success: false, error: error.message };
   }
 };
@@ -56,14 +57,8 @@ const sendEmailNotification = async (applicationData) => {
 // Application operations
 export const createApplication = async (applicationData) => {
   try {
-    console.log('🔥 createApplication called with:', applicationData);
-    console.log('🔥 Database instance:', database);
-    
     const applicationsRef = ref(database, COLLECTIONS.APPLICATIONS);
-    console.log('🔥 Applications ref:', applicationsRef);
-    
     const newApplicationRef = push(applicationsRef);
-    console.log('🔥 New application ref:', newApplicationRef);
     
     const applicationWithMetadata = {
       ...applicationData,
@@ -73,15 +68,10 @@ export const createApplication = async (applicationData) => {
       updatedAt: new Date().toISOString()
     };
     
-    console.log('🔥 Application with metadata:', applicationWithMetadata);
-    
     await set(newApplicationRef, applicationWithMetadata);
-    console.log('✅ Application saved to Realtime Database successfully!');
     
     // Send email notification (non-blocking)
-    sendEmailNotification(applicationWithMetadata).catch(err => {
-      console.error('Email notification error (non-blocking):', err);
-    });
+    sendEmailNotification(applicationWithMetadata).catch(() => {});
     
     return { 
       success: true, 
@@ -89,8 +79,7 @@ export const createApplication = async (applicationData) => {
       data: applicationWithMetadata
     };
   } catch (error) {
-    console.error('❌ Error creating application:', error);
-    console.error('❌ Error details:', error.message, error.code);
+    console.error('Error creating application:', error);
     return { success: false, error: error.message };
   }
 };
@@ -183,12 +172,10 @@ export const deleteApplication = async (applicationId) => {
 // Real-time listeners
 export const subscribeToUserApplications = (userId, callback) => {
   if (!userId) {
-    console.warn('subscribeToUserApplications: userId is required');
     callback([]);
-    return () => {}; // Return empty unsubscribe function
+    return () => {};
   }
-  
-  console.log('🔍 subscribeToUserApplications: Setting up listener for userId:', userId);
+
   const applicationsRef = ref(database, COLLECTIONS.APPLICATIONS);
   const userApplicationsQuery = query(
     applicationsRef,
@@ -197,35 +184,27 @@ export const subscribeToUserApplications = (userId, callback) => {
   );
   
   const unsubscribe = onValue(userApplicationsQuery, (snapshot) => {
-    console.log('📊 subscribeToUserApplications: Snapshot received, exists:', snapshot.exists());
     if (snapshot.exists()) {
       const applications = [];
       snapshot.forEach((childSnapshot) => {
-        const appData = {
+        applications.push({
           id: childSnapshot.key,
           ...childSnapshot.val()
-        };
-        console.log('📄 Found application:', appData.id, appData.projectName);
-        applications.push(appData);
+        });
       });
       
-      // Sort by creation date (newest first)
       applications.sort((a, b) => {
         const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
         const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
         return dateB - dateA;
       });
       
-      console.log('✅ subscribeToUserApplications: Returning', applications.length, 'applications');
       callback(applications);
     } else {
-      console.log('ℹ️ subscribeToUserApplications: No applications found for user');
       callback([]);
     }
   }, (error) => {
-    console.error('❌ Error in subscribeToUserApplications:', error);
-    console.error('Error code:', error.code);
-    console.error('Error message:', error.message);
+    console.error('Error in subscribeToUserApplications:', error);
     callback([]);
   });
   
@@ -576,22 +555,27 @@ export const subscribeToCompanyClients = (companyId, callback) => {
   const companyRef = ref(database, `${COLLECTIONS.ENERGY_COMPANIES}/${companyId}`);
   
   const unsubscribe = onValue(companyRef, async (snapshot) => {
-    if (snapshot.exists()) {
-      const company = snapshot.val();
-      const assignedClientIds = company.assignedClients || [];
-      const applications = [];
-      for (const appId of assignedClientIds) {
-        const appRef = ref(database, `${COLLECTIONS.APPLICATIONS}/${appId}`);
-        const appSnapshot = await get(appRef);
-        if (appSnapshot.exists()) {
-          applications.push({
-            id: appId,
-            ...appSnapshot.val()
-          });
+    try {
+      if (snapshot.exists()) {
+        const company = snapshot.val();
+        const assignedClientIds = company.assignedClients || [];
+        const applications = [];
+        for (const appId of assignedClientIds) {
+          const appRef = ref(database, `${COLLECTIONS.APPLICATIONS}/${appId}`);
+          const appSnapshot = await get(appRef);
+          if (appSnapshot.exists()) {
+            applications.push({
+              id: appId,
+              ...appSnapshot.val()
+            });
+          }
         }
+        callback(applications);
+      } else {
+        callback([]);
       }
-      callback(applications);
-    } else {
+    } catch (error) {
+      console.error('Error fetching company clients:', error);
       callback([]);
     }
   }, (error) => {

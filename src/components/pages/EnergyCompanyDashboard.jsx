@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Loader2, Building, Eye, LogOut, Users, FileText } from "lucide-react";
 import { Card, PrimaryButton, GhostButton, Pill } from "../ui";
-import { progressForStatus, formatDate } from "../../utils";
+import { progressForStatus, getStatusColor } from "../../utils";
 import { subscribeToCompanyClients } from "../../firebase/realtime-db";
 
 const EnergyCompanyDashboard = ({ company, onLogout, onViewClient }) => {
@@ -31,17 +31,6 @@ const EnergyCompanyDashboard = ({ company, onLogout, onViewClient }) => {
     const matchesStatus = statusFilter === "all" || client.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
-
-  const getStatusColor = (status) => {
-    const colors = {
-      "Under Review": "bg-blue-100 text-blue-800",
-      "Matched": "bg-purple-100 text-purple-800",
-      "Approved": "bg-green-100 text-green-800",
-      "In Execution": "bg-orange-100 text-orange-800",
-      "Completed": "bg-emerald-100 text-emerald-800"
-    };
-    return colors[status] || "bg-gray-100 text-gray-800";
-  };
 
   if (loading) {
     return (

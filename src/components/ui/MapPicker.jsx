@@ -1,8 +1,9 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+// useRef is still needed for inputRef in PlacesAutocomplete
 import { APIProvider, Map, AdvancedMarker, Pin, useMapsLibrary } from '@vis.gl/react-google-maps';
 import { MapPin, Search } from 'lucide-react';
 
-const PlacesAutocomplete = ({ onPlaceSelect, mapCenter }) => {
+const PlacesAutocomplete = ({ onPlaceSelect }) => {
   const [placeAutocomplete, setPlaceAutocomplete] = useState(null);
   const inputRef = useRef(null);
   const places = useMapsLibrary('places');
@@ -53,7 +54,6 @@ const MapPickerContent = ({ value, onChange, apiKey }) => {
   );
   const [mapCenter, setMapCenter] = useState(markerPosition);
   const [mapZoom, setMapZoom] = useState(13);
-  const mapRef = useRef(null);
 
   const handleMapClick = useCallback((event) => {
     const lat = event.detail.latLng.lat;

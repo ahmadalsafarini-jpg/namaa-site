@@ -13,9 +13,14 @@ const AdminLogin = ({ onLogin }) => {
     setError("");
     setLoading(true);
     
-    // Simulate authentication delay
+    const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD;
+    if (!adminPassword) {
+      setError("Admin login is not configured. Set VITE_ADMIN_PASSWORD in .env");
+      setLoading(false);
+      return;
+    }
     setTimeout(() => {
-      if (password === "ahmadbasem") {
+      if (password === adminPassword) {
         onLogin();
       } else {
         setError("Invalid password");

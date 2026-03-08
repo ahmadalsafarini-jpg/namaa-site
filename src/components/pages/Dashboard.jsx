@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Mail, CalendarDays, Building, MapPin, Zap, Plus, FileText, TrendingUp, Clock, ChevronRight, Sparkles, BarChart3 } from "lucide-react";
 import { Card, PrimaryButton, Pill, Progress } from "../ui";
 import { formatDate, progressForStatus } from "../../utils";
-import { getUserApplications, subscribeToUserApplications } from "../../firebase/realtime-db";
+import { subscribeToUserApplications } from "../../firebase/realtime-db";
 
 const Dashboard = ({ user, applications, onOpen, onApplicationClick }) => {
   const [firestoreApplications, setFirestoreApplications] = useState([]);
@@ -11,24 +11,18 @@ const Dashboard = ({ user, applications, onOpen, onApplicationClick }) => {
 
   useEffect(() => {
     if (!user?.uid) {
-      console.log('Dashboard: No user UID available');
       setLoading(false);
       return;
     }
 
-    console.log('Dashboard: Subscribing to applications for user:', user.uid);
     setLoading(true);
 
     const unsubscribe = subscribeToUserApplications(user.uid, (apps) => {
-      console.log('Dashboard: Received applications:', apps?.length || 0, apps);
       setFirestoreApplications(apps || []);
       setLoading(false);
     });
 
-    return () => {
-      console.log('Dashboard: Unsubscribing from applications');
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, [user?.uid]);
 
   const displayApplications = firestoreApplications.length > 0 ? firestoreApplications : applications;
@@ -68,7 +62,7 @@ const Dashboard = ({ user, applications, onOpen, onApplicationClick }) => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold text-slate-900">
-                Welcome back, {user.name.split(" ")[0]}! 👋
+                Welcome back, {(user?.name || "User").split(" ")[0]}!
               </h1>
               <p className="mt-2 text-slate-600 flex items-center gap-2">
                 <Mail className="h-4 w-4" />

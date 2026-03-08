@@ -8,15 +8,29 @@ import { getStorage } from 'firebase/storage';
 // Your web app's Firebase configuration
 // For Firebase JS SDK v9 and later, measurementId is optional
 // Supports environment variables for easy migration between Firebase projects
+const requiredEnvVars = [
+  'VITE_FIREBASE_API_KEY',
+  'VITE_FIREBASE_AUTH_DOMAIN',
+  'VITE_FIREBASE_PROJECT_ID',
+  'VITE_FIREBASE_STORAGE_BUCKET',
+  'VITE_FIREBASE_APP_ID',
+  'VITE_FIREBASE_DATABASE_URL'
+];
+
+const missing = requiredEnvVars.filter(key => !import.meta.env[key]);
+if (missing.length > 0) {
+  console.error(`Missing required Firebase env vars: ${missing.join(', ')}. Copy env-template.txt to .env and fill in values.`);
+}
+
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDOQHNX90UG3JfrGn8VXmPHCJ_Fa983XD4",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "namaa-fc163.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "namaa-fc163",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "namaa-fc163.firebasestorage.app",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "117620777227",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:117620777227:web:5e5bde97f349649840820e",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-KKVH5PY6H8",
-  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL || "https://namaa-fc163-default-rtdb.europe-west1.firebasedatabase.app/"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL
 };
 
 // Initialize Firebase

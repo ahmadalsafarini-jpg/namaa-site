@@ -19,8 +19,8 @@ import {
   EnergyCompanyDashboard,
   EnergyCompanyClientDetail
 } from "./components/pages";
-import { nextStatus, progressForStatus } from "./utils";
-import { onAuthStateChange, getCurrentUser, signOutUser } from "./firebase/auth";
+import { nextStatus } from "./utils";
+import { onAuthStateChange, signOutUser } from "./firebase/auth";
 import { getUserApplications, subscribeToUserApplications, updateApplication, loginEnergyCompany } from "./firebase/realtime-db";
 
 // SEO: title and meta description per route
@@ -67,7 +67,6 @@ export default function NamaaPrototype() {
   useEffect(() => {
     const handlePopState = (event) => {
       const route = event.state?.route || window.location.hash.slice(1) || 'landing';
-      console.log('🔙 Browser back/forward to:', route);
       setRoute(route);
     };
 
@@ -85,9 +84,7 @@ export default function NamaaPrototype() {
   // Navigation event listener
   useEffect(() => {
     const handleNavigation = (event) => {
-      const targetRoute = event.detail;
-      console.log('🚀 Navigation event received:', targetRoute);
-      goto(targetRoute);
+      goto(event.detail);
     };
 
     window.addEventListener('nav:goto', handleNavigation);
@@ -238,10 +235,6 @@ export default function NamaaPrototype() {
     
     const newStatus = nextStatus(application.status);
     
-    console.log('🚀 Advancing status for:', application.projectName, 'from', application.status, 'to', newStatus);
-    console.log('🔒 Setting activeApplicationId to:', application.id);
-    
-    // Ensure we maintain the current selection
     setActiveApplicationId(application.id);
     
     // Save to Realtime Database
@@ -249,17 +242,11 @@ export default function NamaaPrototype() {
       const result = await updateApplication(application.id, { status: newStatus });
       if (!result.success) {
         console.error('Failed to update application status:', result.error);
-      } else {
-        console.log('✅ Status updated successfully in database');
       }
     } catch (error) {
       console.error('Error updating application status:', error);
     }
   };
-
-  useEffect(() => {
-    // No external navigation now; matching/financing live inside Ticket page
-  }, [applications]);
 
   const handleProceedPay = async (company) => {
     alert(`Payment to ${company.name} simulated ✅`);
@@ -274,37 +261,48 @@ export default function NamaaPrototype() {
       }
     };
     
-    setApplications((prev) => prev.map((a) => (a.id === activeApplication.id ? { ...a, status: "Approved" } : a)));
+    const appId = activeApplication?.id;
+    if (!appId) return;
+
+    setApplications((prev) => prev.map((a) => (a.id === appId ? { ...a, status: "Approved" } : a)));
     await updateApplicationStatus("Approved");
     
     setTimeout(async () => {
-      setApplications((prev) => prev.map((a) => (a.id === activeApplication.id ? { ...a, status: "In Execution" } : a)));
-      await updateApplicationStatus("In Execution");
+      try {
+        setApplications((prev) => prev.map((a) => (a.id === appId ? { ...a, status: "In Execution" } : a)));
+        await updateApplicationStatus("In Execution");
+      } catch (error) {
+        console.error('Error updating to In Execution:', error);
+      }
     }, 600);
     
-    setTimeout(async () => { 
-      setApplications((prev) => prev.map((a) => (a.id === activeApplication.id ? { ...a, status: "Completed" } : a))); 
-      await updateApplicationStatus("Completed");
-      setProject({ name: activeApplication.projectName, phase: "Installation" }); 
-      goto("project"); 
+    setTimeout(async () => {
+      try {
+        setApplications((prev) => prev.map((a) => (a.id === appId ? { ...a, status: "Completed" } : a)));
+        await updateApplicationStatus("Completed");
+        setProject({ name: activeApplication?.projectName, phase: "Installation" }); 
+        goto("project");
+      } catch (error) {
+        console.error('Error updating to Completed:', error);
+      }
     }, 1600);
   };
 
   const handleApplyFinancing = (company) => { setMatchingCompany(company); goto("financing"); };
-  const handleFinancingSubmit = async (payload) => { 
-    setApplications((prev) => prev.map((a) => (a.id === activeApplication.id ? { ...a, status: "Under Review" } : a))); 
+  const handleFinancingSubmit = async (payload) => {
+    const app = activeApplication;
+    if (!app) return;
     
-    // Update application status in database
-    if (activeApplication) {
-      try {
-        await updateApplication(activeApplication.id, { status: "Under Review" });
-      } catch (error) {
-        console.error('Error updating application status:', error);
-      }
+    setApplications((prev) => prev.map((a) => (a.id === app.id ? { ...a, status: "Under Review" } : a))); 
+    
+    try {
+      await updateApplication(app.id, { status: "Under Review" });
+    } catch (error) {
+      console.error('Error updating application status:', error);
     }
     
     alert(`Financing submitted to ${payload.org} for ${payload.type}. Application set to Under Financing Review.`); 
-    setProject({ name: activeApplication.projectName, phase: "Financing" }); 
+    setProject({ name: app.projectName, phase: "Financing" }); 
     goto("project"); 
   };
   const handleMoreInfo = (company) => { alert(`A clarification request was sent to ${company.name}. They will revise their offer.`); };
@@ -338,13 +336,17 @@ export default function NamaaPrototype() {
 
   // Energy Company handlers
   const handleEnergyCompanyLogin = async (username, password) => {
-    const result = await loginEnergyCompany(username, password);
-    if (result.success) {
-      sessionStorage.setItem("energyCompanySession", JSON.stringify(result.data));
-      setEnergyCompany(result.data);
-      goto("energy-company-dashboard");
-    } else {
-      throw new Error(result.error);
+    try {
+      const result = await loginEnergyCompany(username, password);
+      if (result.success) {
+        sessionStorage.setItem("energyCompanySession", JSON.stringify(result.data));
+        setEnergyCompany(result.data);
+        goto("energy-company-dashboard");
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      throw error;
     }
   };
 

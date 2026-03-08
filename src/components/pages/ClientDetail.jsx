@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ArrowLeft, Save, Upload, FileText, Trash2, Plus } from "lucide-react";
 import { Card, PrimaryButton, GhostButton, Input, Select, TextArea, Pill, Progress } from "../ui";
 import { STATUS_FLOW } from "../../constants";
-import { progressForStatus, formatDate } from "../../utils";
+import { progressForStatus } from "../../utils";
 import { updateApplication, uploadFile } from "../../firebase/realtime-db";
 
 const ClientDetail = ({ application, onBack, onSave }) => {
@@ -62,7 +62,7 @@ const ClientDetail = ({ application, onBack, onSave }) => {
 
   const removeFile = (category, index) => {
     const updatedFiles = { ...editedApp.files };
-    updatedFiles[category] = updatedFiles[category].filter((_, i) => i !== index);
+    updatedFiles[category] = (updatedFiles[category] || []).filter((_, i) => i !== index);
     setEditedApp({ ...editedApp, files: updatedFiles });
   };
 

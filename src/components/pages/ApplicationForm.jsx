@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, Building, MapPin, Zap, FileText, Image, BarChart3, Check, AlertCircle, Loader, ArrowLeft, Sparkles, CheckCircle } from "lucide-react";
 import { Card, PrimaryButton, GhostButton, Input, Select, TextArea, FilePicker, MapPicker } from "../ui";
-import { formatDate } from "../../utils";
 import { createApplication, updateApplication, uploadMultipleFiles } from "../../firebase/realtime-db";
-import { COUNTRIES } from "../../constants";
 
 const ApplicationForm = ({ onSubmit, onCancel, user }) => {
   const [f, setF] = useState({ 
@@ -59,7 +57,7 @@ const ApplicationForm = ({ onSubmit, onCancel, user }) => {
         }));
       } else {
         console.error(`Failed to upload ${category} files:`, uploadResult.errors);
-        setError(`Failed to upload some ${category} files: ${uploadResult.error || 'Unknown error'}`);
+        setError(`Failed to upload some ${category} files: ${uploadResult.errors?.join(', ') || 'Unknown error'}`);
       }
     } catch (error) {
       console.error(`Error uploading ${category} files:`, error);
@@ -122,7 +120,6 @@ const ApplicationForm = ({ onSubmit, onCancel, user }) => {
     setSuccess(false);
     
     const timeoutId = setTimeout(() => {
-      console.warn("Form submission timeout - forcing loading to false");
       setLoading(false);
     }, 30000);
     
@@ -408,11 +405,14 @@ const ApplicationForm = ({ onSubmit, onCancel, user }) => {
                     </label>
                     <MapPicker
                       value={f.coordinates}
-                      onChange={(coords) => setF((s) => ({ 
-                        ...s, 
-                        coordinates: coords,
-                        location: `${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`
-                      }))}
+                      onChange={(coords) => {
+                        if (!coords) return;
+                        setF((s) => ({ 
+                          ...s, 
+                          coordinates: coords,
+                          location: `${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`
+                        }));
+                      }}
                       apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
                     />
                   </div>

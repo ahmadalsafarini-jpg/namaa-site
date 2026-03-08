@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Loader2, Users, Building, Eye, Edit, Trash2, Plus, Zap, UserPlus, X } from "lucide-react";
 import { Card, PrimaryButton, GhostButton, Input } from "../ui";
+import { getStatusColor } from "../../utils";
 import { subscribeToAllApplications, updateApplication, deleteApplication, getAllEnergyCompanies, createEnergyCompany, deleteEnergyCompany, assignClientToCompany, unassignClientFromCompany } from "../../firebase/realtime-db";
 
 const AdminDashboard = ({ onLogout, onViewClient }) => {
@@ -29,9 +30,13 @@ const AdminDashboard = ({ onLogout, onViewClient }) => {
   }, []);
 
   const loadEnergyCompanies = async () => {
-    const result = await getAllEnergyCompanies();
-    if (result.success) {
-      setEnergyCompanies(result.data);
+    try {
+      const result = await getAllEnergyCompanies();
+      if (result.success) {
+        setEnergyCompanies(result.data);
+      }
+    } catch (error) {
+      console.error('Error loading energy companies:', error);
     }
   };
 
@@ -42,24 +47,34 @@ const AdminDashboard = ({ onLogout, onViewClient }) => {
       return;
     }
 
-    const result = await createEnergyCompany(newCompany);
-    if (result.success) {
-      alert("Energy company created successfully!");
-      setNewCompany({ name: "", username: "", password: "", contactEmail: "", contactPhone: "" });
-      setShowCompanyForm(false);
-      loadEnergyCompanies();
-    } else {
-      alert(`Failed to create company: ${result.error}`);
+    try {
+      const result = await createEnergyCompany(newCompany);
+      if (result.success) {
+        alert("Energy company created successfully!");
+        setNewCompany({ name: "", username: "", password: "", contactEmail: "", contactPhone: "" });
+        setShowCompanyForm(false);
+        loadEnergyCompanies();
+      } else {
+        alert(`Failed to create company: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error creating company:', error);
+      alert('An unexpected error occurred while creating the company.');
     }
   };
 
   const handleDeleteCompany = async (companyId) => {
     if (confirm('Are you sure you want to delete this energy company?')) {
-      const result = await deleteEnergyCompany(companyId);
-      if (result.success) {
-        loadEnergyCompanies();
-      } else {
-        alert(`Failed to delete: ${result.error}`);
+      try {
+        const result = await deleteEnergyCompany(companyId);
+        if (result.success) {
+          loadEnergyCompanies();
+        } else {
+          alert(`Failed to delete: ${result.error}`);
+        }
+      } catch (error) {
+        console.error('Error deleting company:', error);
+        alert('An unexpected error occurred while deleting the company.');
       }
     }
   };
@@ -67,26 +82,36 @@ const AdminDashboard = ({ onLogout, onViewClient }) => {
   const handleAssignClient = async (applicationId) => {
     if (!selectedCompanyForAssign) return;
     
-    const app = applications.find(a => a.id === applicationId);
-    const result = await assignClientToCompany(selectedCompanyForAssign, applicationId);
-    if (result.success) {
-      alert(`Client "${app?.projectName}" assigned successfully!`);
-      setShowAssignModal(false);
-      setSelectedCompanyForAssign(null);
-      loadEnergyCompanies();
-    } else {
-      alert(`Failed to assign: ${result.error}`);
+    try {
+      const app = applications.find(a => a.id === applicationId);
+      const result = await assignClientToCompany(selectedCompanyForAssign, applicationId);
+      if (result.success) {
+        alert(`Client "${app?.projectName}" assigned successfully!`);
+        setShowAssignModal(false);
+        setSelectedCompanyForAssign(null);
+        loadEnergyCompanies();
+      } else {
+        alert(`Failed to assign: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error assigning client:', error);
+      alert('An unexpected error occurred while assigning the client.');
     }
   };
 
   const handleUnassignClient = async (companyId, applicationId) => {
     const app = applications.find(a => a.id === applicationId);
     if (confirm(`Unassign "${app?.projectName}" from this company?`)) {
-      const result = await unassignClientFromCompany(companyId, applicationId);
-      if (result.success) {
-        loadEnergyCompanies();
-      } else {
-        alert(`Failed to unassign: ${result.error}`);
+      try {
+        const result = await unassignClientFromCompany(companyId, applicationId);
+        if (result.success) {
+          loadEnergyCompanies();
+        } else {
+          alert(`Failed to unassign: ${result.error}`);
+        }
+      } catch (error) {
+        console.error('Error unassigning client:', error);
+        alert('An unexpected error occurred while unassigning the client.');
       }
     }
   };
@@ -117,18 +142,6 @@ const AdminDashboard = ({ onLogout, onViewClient }) => {
         alert('Failed to delete application');
       }
     }
-  };
-
-  const getStatusColor = (status) => {
-    const colors = {
-      "Overview": "bg-slate-100 text-slate-800",
-      "Under Review": "bg-blue-100 text-blue-800",
-      "Matched": "bg-purple-100 text-purple-800",
-      "Approved": "bg-green-100 text-green-800",
-      "In Execution": "bg-orange-100 text-orange-800",
-      "Completed": "bg-emerald-100 text-emerald-800"
-    };
-    return colors[status] || "bg-gray-100 text-gray-800";
   };
 
   if (loading) {
