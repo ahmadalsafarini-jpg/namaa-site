@@ -19,7 +19,9 @@ const requiredEnvVars = [
 
 const missing = requiredEnvVars.filter(key => !import.meta.env[key]);
 if (missing.length > 0) {
-  console.error(`Missing required Firebase env vars: ${missing.join(', ')}. Copy env-template.txt to .env and fill in values.`);
+  const msg = `Missing required Firebase env vars: ${missing.join(', ')}. Copy env-template.txt to .env and fill in values. Restart the dev server after editing .env.`;
+  console.error(msg);
+  throw new Error(msg);
 }
 
 const firebaseConfig = {

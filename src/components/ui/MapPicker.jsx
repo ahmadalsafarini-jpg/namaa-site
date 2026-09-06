@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-// useRef is still needed for inputRef in PlacesAutocomplete
-import { APIProvider, Map, AdvancedMarker, Pin, useMapsLibrary } from '@vis.gl/react-google-maps';
+import { APIProvider, Map, Marker, RenderingType, useMapsLibrary } from '@vis.gl/react-google-maps';
 import { MapPin, Search } from 'lucide-react';
 
 const PlacesAutocomplete = ({ onPlaceSelect }) => {
@@ -86,29 +85,22 @@ const MapPickerContent = ({ value, onChange, apiKey }) => {
       {/* Search Bar */}
       <PlacesAutocomplete onPlaceSelect={handlePlaceSelect} mapCenter={mapCenter} />
       
-      {/* Map */}
+      {/* Map: RASTER mode works with API key only (no Map ID required) */}
       <div className="h-[400px] w-full rounded-xl overflow-hidden border-2 border-slate-200 shadow-lg">
         <Map
           center={mapCenter}
           zoom={mapZoom}
-          mapId="DEMO_MAP_ID"
+          renderingType={RenderingType.RASTER}
           onClick={handleMapClick}
           gestureHandling="greedy"
           disableDefaultUI={false}
           clickableIcons={false}
-          styles={[]}
           onCameraChanged={(ev) => {
             setMapCenter(ev.detail.center);
             setMapZoom(ev.detail.zoom);
           }}
         >
-          <AdvancedMarker position={markerPosition}>
-            <Pin
-              background="#10b981"
-              borderColor="#059669"
-              glyphColor="#ffffff"
-            />
-          </AdvancedMarker>
+          <Marker position={markerPosition} />
         </Map>
       </div>
       
